@@ -6,7 +6,10 @@ import {
   EastBlueWeakestProps,
   totalFrames as eastBlueWeakestFrames,
 } from './compositions/EastBlueWeakest/EastBlueWeakest'
-import { fetchSeaCards } from './compositions/EastBlueWeakest/fetch'
+import {
+  fetchLatestChapter,
+  fetchSeaCards,
+} from './compositions/EastBlueWeakest/fetch'
 
 // Instagram Reels: 9:16 portrait, 1080x1920, 30fps.
 const REEL_WIDTH = 1080
@@ -39,11 +42,14 @@ export function Root() {
         // Placeholder; calculateMetadata sets the real duration once we know
         // how many sea cards came back.
         durationInFrames={REEL_FPS * 30}
-        defaultProps={{ cards: [] }}
+        defaultProps={{ cards: [], latestChapter: null }}
         calculateMetadata={async ({ props }) => {
-          const cards = await fetchSeaCards()
+          const [cards, latestChapter] = await Promise.all([
+            fetchSeaCards(),
+            fetchLatestChapter(),
+          ])
           return {
-            props: { ...props, cards },
+            props: { ...props, cards, latestChapter },
             durationInFrames: eastBlueWeakestFrames(cards.length),
           }
         }}

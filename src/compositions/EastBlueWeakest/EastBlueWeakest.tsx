@@ -12,6 +12,7 @@ import { formatBerry } from '../../lib/format'
 
 export type EastBlueWeakestProps = {
   cards: SeaCard[]
+  latestChapter: number | null
 } & Record<string, unknown>
 
 // Per-card timing (in frames at 30fps).
@@ -74,34 +75,55 @@ const THEMES: Record<
 
 const SANS = 'system-ui, -apple-system, sans-serif'
 
-const FOOTER_TEXT = 'onepieceofdata.com'
+const FOOTER_SITE = 'onepieceofdata.com'
 
-function Footer() {
+function Footer({ latestChapter }: { latestChapter: number | null }) {
   return (
     <div
       style={{
         position: 'absolute',
-        bottom: 24,
+        bottom: 20,
         left: 0,
         right: 0,
-        textAlign: 'center',
-        fontSize: 22,
-        fontWeight: 600,
-        letterSpacing: 4,
-        color: 'rgba(255,255,255,0.65)',
-        textTransform: 'lowercase',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 4,
         fontFamily: SANS,
         textShadow: '0 1px 4px rgba(0,0,0,0.6)',
         pointerEvents: 'none',
         zIndex: 10,
       }}
     >
-      {FOOTER_TEXT}
+      <div
+        style={{
+          fontSize: 22,
+          fontWeight: 600,
+          letterSpacing: 4,
+          color: 'rgba(255,255,255,0.7)',
+          textTransform: 'lowercase',
+        }}
+      >
+        {FOOTER_SITE}
+      </div>
+      {latestChapter !== null && (
+        <div
+          style={{
+            fontSize: 16,
+            fontWeight: 500,
+            letterSpacing: 2,
+            color: 'rgba(255,255,255,0.5)',
+            textTransform: 'lowercase',
+          }}
+        >
+          data through chapter {latestChapter}
+        </div>
+      )}
     </div>
   )
 }
 
-export function EastBlueWeakest({ cards }: EastBlueWeakestProps) {
+export function EastBlueWeakest({ cards, latestChapter }: EastBlueWeakestProps) {
   return (
     <AbsoluteFill style={{ background: '#000', fontFamily: SANS, color: 'white' }}>
       <Sequence durationInFrames={TITLE_FRAMES}>
@@ -144,7 +166,7 @@ export function EastBlueWeakest({ cards }: EastBlueWeakestProps) {
         <FinalCard />
       </Sequence>
 
-      <Footer />
+      <Footer latestChapter={latestChapter} />
     </AbsoluteFill>
   )
 }

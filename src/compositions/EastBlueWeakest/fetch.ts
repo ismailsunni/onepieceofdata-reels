@@ -68,6 +68,17 @@ function buildCard(
   return { label, theme, top5, averageTop5 }
 }
 
+export async function fetchLatestChapter(): Promise<number | null> {
+  const { data, error } = await supabase
+    .from('chapter')
+    .select('number')
+    .order('number', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw error
+  return data?.number ?? null
+}
+
 export async function fetchSeaCards(): Promise<SeaCard[]> {
   const { data, error } = await supabase
     .from('character')
