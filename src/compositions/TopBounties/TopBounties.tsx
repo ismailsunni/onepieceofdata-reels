@@ -8,9 +8,9 @@ import {
 import type { BountyRow } from './fetch'
 import { formatBerry } from '../../lib/format'
 
-export interface TopBountiesProps {
+export type TopBountiesProps = {
   rows: BountyRow[]
-}
+} & Record<string, unknown>
 
 const TITLE_DURATION = 30
 const ROW_STAGGER = 12
