@@ -1,15 +1,25 @@
 import { supabase } from '../../lib/supabase'
 
 export interface SeaCharacter {
+  id: string
   name: string
   bounty: number
+  /** Resolved at build time; null when the character has no portrait. */
+  imageUrl: string | null
 }
 
 export interface SeaCard {
   /** Display label, e.g. "East Blue" or "East Blue (without Luffy & Roger)". */
   label: string
   /** Visual theme key — composition picks colours from this. */
-  theme: 'east-blue' | 'east-blue-clean' | 'west' | 'north' | 'south' | 'grand-line' | 'new-world'
+  theme:
+    | 'east-blue'
+    | 'east-blue-clean'
+    | 'west'
+    | 'north'
+    | 'south'
+    | 'grand-line'
+    | 'new-world'
   top5: SeaCharacter[]
   averageTop5: number
 }
@@ -27,6 +37,20 @@ const EXCLUDED_FOR_CLEAN_EAST_BLUE = new Set([
   'Monkey D. Luffy',
   'Gol D. Roger',
 ])
+
+function characterImageUrl(id: string): string {
+  // Same path the React project uses (services/quizService.ts).
+  return `${process.env.SUPABASE_URL}/storage/v1/object/public/character-images/${encodeURIComponent(id)}.png`
+}
+
+async function imageExists(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: 'HEAD' })
+    return res.ok
+  } catch {
+    return false
+  }
+}
 
 function buildCard(
   label: string,
@@ -47,7 +71,7 @@ function buildCard(
 export async function fetchSeaCards(): Promise<SeaCard[]> {
   const { data, error } = await supabase
     .from('character')
-    .select('name, bounty, origin_region')
+    .select('id, name, bounty, origin_region')
     .not('bounty', 'is', null)
     .gt('bounty', 0)
     .not('origin_region', 'is', null)
@@ -59,7 +83,12 @@ export async function fetchSeaCards(): Promise<SeaCard[]> {
     const region = (row.origin_region as string | null)?.trim()
     if (!region) continue
     const list = byRegion.get(region) ?? []
-    list.push({ name: row.name ?? 'Unknown', bounty: row.bounty ?? 0 })
+    list.push({
+      id: String(row.id),
+      name: row.name ?? 'Unknown',
+      bounty: row.bounty ?? 0,
+      imageUrl: null,
+    })
     byRegion.set(region, list)
   }
 
@@ -70,7 +99,6 @@ export async function fetchSeaCards(): Promise<SeaCard[]> {
     if (card) cards.push(card)
 
     if (r.region === 'East Blue') {
-      // Add the dramatic-contrast variant: East Blue without its two outliers.
       const filtered = chars.filter(
         (c) => !EXCLUDED_FOR_CLEAN_EAST_BLUE.has(c.name)
       )
@@ -83,7 +111,17 @@ export async function fetchSeaCards(): Promise<SeaCard[]> {
     }
   }
 
-  // Sort ascending by average — weakest first, the punchline at the end.
+  // Resolve portrait URLs in parallel. Characters without an uploaded image
+  // get null — the composition falls back to initials so the render never
+  // breaks on a 404.
+  const allChars = cards.flatMap((c) => c.top5)
+  await Promise.all(
+    allChars.map(async (c) => {
+      const url = characterImageUrl(c.id)
+      if (await imageExists(url)) c.imageUrl = url
+    })
+  )
+
   cards.sort((a, b) => a.averageTop5 - b.averageTop5)
   return cards
 }

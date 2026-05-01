@@ -1,5 +1,6 @@
 import {
   AbsoluteFill,
+  Img,
   interpolate,
   Sequence,
   spring,
@@ -17,10 +18,17 @@ export type EastBlueWeakestProps = {
 export const TITLE_FRAMES = 75 // 2.5s
 export const SUBTITLE_FRAMES = 45 // 1.5s
 export const CARD_FRAMES = 120 // 4s per sea card
+export const RECAP_FRAMES = 210 // 7s — long enough to read 7 rows
 export const FINAL_FRAMES = 120 // 4s
 
 export function totalFrames(cardCount: number): number {
-  return TITLE_FRAMES + SUBTITLE_FRAMES + cardCount * CARD_FRAMES + FINAL_FRAMES
+  return (
+    TITLE_FRAMES +
+    SUBTITLE_FRAMES +
+    cardCount * CARD_FRAMES +
+    RECAP_FRAMES +
+    FINAL_FRAMES
+  )
 }
 
 const THEMES: Record<
@@ -66,6 +74,33 @@ const THEMES: Record<
 
 const SANS = 'system-ui, -apple-system, sans-serif'
 
+const FOOTER_TEXT = 'onepieceofdata.com'
+
+function Footer() {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: 24,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        fontSize: 22,
+        fontWeight: 600,
+        letterSpacing: 4,
+        color: 'rgba(255,255,255,0.65)',
+        textTransform: 'lowercase',
+        fontFamily: SANS,
+        textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+        pointerEvents: 'none',
+        zIndex: 10,
+      }}
+    >
+      {FOOTER_TEXT}
+    </div>
+  )
+}
+
 export function EastBlueWeakest({ cards }: EastBlueWeakestProps) {
   return (
     <AbsoluteFill style={{ background: '#000', fontFamily: SANS, color: 'white' }}>
@@ -92,10 +127,24 @@ export function EastBlueWeakest({ cards }: EastBlueWeakestProps) {
 
       <Sequence
         from={TITLE_FRAMES + SUBTITLE_FRAMES + cards.length * CARD_FRAMES}
+        durationInFrames={RECAP_FRAMES}
+      >
+        <RecapCard cards={cards} />
+      </Sequence>
+
+      <Sequence
+        from={
+          TITLE_FRAMES +
+          SUBTITLE_FRAMES +
+          cards.length * CARD_FRAMES +
+          RECAP_FRAMES
+        }
         durationInFrames={FINAL_FRAMES}
       >
         <FinalCard />
       </Sequence>
+
+      <Footer />
     </AbsoluteFill>
   )
 }
@@ -151,6 +200,17 @@ function TitleCard() {
           really the
           <br />
           <span style={{ color: '#fbbf24' }}>weakest?</span>
+        </div>
+        <div
+          style={{
+            marginTop: 36,
+            fontSize: 38,
+            fontWeight: 600,
+            letterSpacing: 1,
+            color: 'rgba(255,255,255,0.85)',
+          }}
+        >
+          See what the data says.
         </div>
       </div>
     </AbsoluteFill>
@@ -238,11 +298,11 @@ function SeaCardView({
               textTransform: 'uppercase',
             }}
           >
-            Rank #{index + 1} of {total}
+            Rank #{total - index} of {total}
           </div>
           <div
             style={{
-              fontSize: 80,
+              fontSize: 96,
               fontWeight: 900,
               lineHeight: 1,
               marginTop: 8,
@@ -274,8 +334,7 @@ function SeaCardView({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 18,
-          flex: 1,
+          gap: 20,
         }}
       >
         {card.top5.map((c, i) => {
@@ -286,23 +345,23 @@ function SeaCardView({
           })
           return (
             <div
-              key={c.name}
+              key={c.id}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 24,
+                gap: 28,
                 background: 'rgba(0,0,0,0.35)',
                 border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 20,
-                padding: '18px 28px',
+                borderRadius: 24,
+                padding: '20px 32px',
                 opacity: rowEnter,
                 transform: `translateX(${(1 - rowEnter) * 60}px)`,
               }}
             >
               <div
                 style={{
-                  width: 56,
-                  fontSize: 40,
+                  width: 70,
+                  fontSize: 56,
                   fontWeight: 800,
                   color: theme.accent,
                   textAlign: 'center',
@@ -310,10 +369,16 @@ function SeaCardView({
               >
                 {i + 1}
               </div>
+              <Avatar
+                imageUrl={c.imageUrl}
+                name={c.name}
+                accent={theme.accent}
+                size={120}
+              />
               <div
                 style={{
                   flex: 1,
-                  fontSize: 38,
+                  fontSize: 50,
                   fontWeight: 700,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -324,7 +389,7 @@ function SeaCardView({
               </div>
               <div
                 style={{
-                  fontSize: 36,
+                  fontSize: 46,
                   fontWeight: 800,
                   color: theme.accent,
                   fontVariantNumeric: 'tabular-nums',
@@ -339,7 +404,7 @@ function SeaCardView({
 
       <div
         style={{
-          marginTop: 32,
+          marginTop: 'auto',
           padding: '24px 32px',
           borderRadius: 24,
           background: 'rgba(0,0,0,0.45)',
@@ -361,7 +426,7 @@ function SeaCardView({
         </div>
         <div
           style={{
-            fontSize: 72,
+            fontSize: 88,
             fontWeight: 900,
             color: 'white',
             lineHeight: 1,
@@ -371,6 +436,191 @@ function SeaCardView({
         >
           {formatBerry(card.averageTop5)}
         </div>
+      </div>
+    </AbsoluteFill>
+  )
+}
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('')
+}
+
+function Avatar({
+  imageUrl,
+  name,
+  accent,
+  size,
+}: {
+  imageUrl: string | null
+  name: string
+  accent: string
+  size: number
+}) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        overflow: 'hidden',
+        border: `3px solid ${accent}`,
+        background: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: size * 0.38,
+        fontWeight: 800,
+        color: accent,
+        boxShadow: '0 6px 16px rgba(0,0,0,0.4)',
+        flexShrink: 0,
+      }}
+    >
+      {imageUrl ? (
+        <Img
+          src={imageUrl}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'top',
+          }}
+        />
+      ) : (
+        <span>{initials(name)}</span>
+      )}
+    </div>
+  )
+}
+
+function RecapCard({ cards }: { cards: SeaCard[] }) {
+  const frame = useCurrentFrame()
+  const { fps } = useVideoConfig()
+  const titleEnter = spring({
+    frame,
+    fps,
+    config: { damping: 14, stiffness: 110 },
+  })
+  return (
+    <AbsoluteFill
+      style={{
+        background:
+          'linear-gradient(180deg, #0b1d3a 0%, #1e3a8a 60%, #0b1d3a 100%)',
+        padding: 70,
+        flexDirection: 'column',
+      }}
+    >
+      <div
+        style={{
+          opacity: titleEnter,
+          transform: `translateY(${(1 - titleEnter) * 20}px)`,
+          textAlign: 'center',
+          marginBottom: 40,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 26,
+            letterSpacing: 8,
+            color: '#fbbf24',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+          }}
+        >
+          Recap
+        </div>
+        <div
+          style={{
+            fontSize: 72,
+            fontWeight: 900,
+            lineHeight: 1.05,
+            marginTop: 10,
+          }}
+        >
+          Average bounty
+          <br />
+          per sea
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+        }}
+      >
+        {[...cards]
+          .sort((a, b) => b.averageTop5 - a.averageTop5)
+          .map((card, i) => {
+          const theme = THEMES[card.theme]
+          const top = card.top5[0]
+          const rowEnter = spring({
+            frame: frame - 14 - i * 7,
+            fps,
+            config: { damping: 18, stiffness: 130 },
+          })
+          const isTop = i === 0
+          return (
+            <div
+              key={`${card.label}-${i}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 20,
+                background: 'rgba(0,0,0,0.4)',
+                border: `1px solid ${isTop ? '#fbbf24' : 'rgba(255,255,255,0.12)'}`,
+                borderRadius: 20,
+                padding: '14px 22px',
+                opacity: rowEnter,
+                transform: `translateX(${(1 - rowEnter) * 60}px)`,
+              }}
+            >
+              <div
+                style={{
+                  width: 50,
+                  fontSize: 36,
+                  fontWeight: 800,
+                  color: theme.accent,
+                  textAlign: 'center',
+                }}
+              >
+                {i + 1}
+              </div>
+              <Avatar
+                imageUrl={top?.imageUrl ?? null}
+                name={top?.name ?? '?'}
+                accent={theme.accent}
+                size={84}
+              />
+              <div
+                style={{
+                  flex: 1,
+                  fontSize: 36,
+                  fontWeight: 700,
+                  lineHeight: 1.1,
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {card.label}
+              </div>
+              <div
+                style={{
+                  fontSize: 40,
+                  fontWeight: 800,
+                  color: theme.accent,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {formatBerry(card.averageTop5)}
+              </div>
+            </div>
+          )
+        })}
       </div>
     </AbsoluteFill>
   )
