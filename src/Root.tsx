@@ -10,6 +10,8 @@ import {
   fetchLatestChapter,
   fetchSeaCards,
 } from './compositions/EastBlueWeakest/fetch'
+import { TopSnubbed } from './compositions/TopSnubbed/TopSnubbed'
+import { loadSnubbedSnapshot } from './compositions/TopSnubbed/fetch'
 
 // Instagram Reels: 9:16 portrait, 1080x1920, 30fps.
 const REEL_WIDTH = 1080
@@ -51,6 +53,21 @@ export function Root() {
           return {
             props: { ...props, cards, latestChapter },
             durationInFrames: eastBlueWeakestFrames(cards.length),
+          }
+        }}
+      />
+      <Composition
+        id="TopSnubbed"
+        component={TopSnubbed}
+        width={REEL_WIDTH}
+        height={REEL_HEIGHT}
+        fps={REEL_FPS}
+        durationInFrames={REEL_FPS * 10}
+        defaultProps={{ rows: [], latestChapter: null }}
+        calculateMetadata={async ({ props }) => {
+          const { rows, throughChapter } = await loadSnubbedSnapshot(5)
+          return {
+            props: { ...props, rows, latestChapter: throughChapter },
           }
         }}
       />
