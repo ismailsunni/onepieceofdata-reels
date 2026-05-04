@@ -254,10 +254,32 @@ async function main() {
   const top100Appearances = linked
     .map((r) => r.appearance)
     .filter((v): v is number => v != null)
+  const top100WithApp = linked.filter(
+    (r): r is typeof r & { appearance: number } => r.appearance != null
+  )
+
+  // For each snubbed char, find top-100 characters with similar appearance
+  // counts. Strategy: take the 5 closest top-100 chars by absolute diff,
+  // then among those pick the 2 with the highest (lowest-numbered) rank.
+  // The story we want: "Kin'emon has 171 appearances — Trafalgar Law has
+  // 207 and the fans voted him #5."
+  function comparablesFor(ac: number) {
+    const nearest = [...top100WithApp]
+      .sort((a, b) => Math.abs(a.appearance - ac) - Math.abs(b.appearance - ac))
+      .slice(0, 5)
+    return nearest.sort((a, b) => a.rank - b.rank).slice(0, 2)
+  }
 
   const snubbedRows: string[][] = snubbed.map((c, i) => {
     const ac = c.appearance_count ?? 0
     const beatenByLess = top100Appearances.filter((v) => v < ac).length
+    const cmp = comparablesFor(ac)
+    const cmpName1 = cmp[0]?.name ?? ''
+    const cmpRank1 = cmp[0] != null ? String(cmp[0].rank) : ''
+    const cmpApp1 = cmp[0] != null ? String(cmp[0].appearance) : ''
+    const cmpName2 = cmp[1]?.name ?? ''
+    const cmpRank2 = cmp[1] != null ? String(cmp[1].rank) : ''
+    const cmpApp2 = cmp[1] != null ? String(cmp[1].appearance) : ''
     return [
       String(i + 1),
       c.id,
@@ -270,6 +292,12 @@ async function main() {
       imageUrls[i],
       latestChapter != null ? String(latestChapter) : '',
       String(beatenByLess),
+      cmpName1,
+      cmpRank1,
+      cmpApp1,
+      cmpName2,
+      cmpRank2,
+      cmpApp2,
     ]
   })
   writeCsv(
@@ -286,6 +314,12 @@ async function main() {
       'Image URL',
       'Through Chapter',
       'Top100 With Less Appearances',
+      'Comparable 1 Name',
+      'Comparable 1 Rank',
+      'Comparable 1 Appearances',
+      'Comparable 2 Name',
+      'Comparable 2 Rank',
+      'Comparable 2 Appearances',
     ],
     snubbedRows
   )

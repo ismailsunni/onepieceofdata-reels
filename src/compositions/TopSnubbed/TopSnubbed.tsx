@@ -246,6 +246,24 @@ export function TopSnubbed({ rows, latestChapter }: TopSnubbedProps) {
                 >
                   Outranks {row.top100WithLessAppearances}/100 voted in
                 </div>
+                {row.comparables.length > 0 && (
+                  <div
+                    style={{
+                      fontSize: 20,
+                      color: 'rgba(255,255,255,0.7)',
+                      marginTop: 4,
+                      fontVariantNumeric: 'tabular-nums',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Like{' '}
+                    {row.comparables
+                      .map((c) => `#${c.rank} ${c.name}`)
+                      .join(' · ')}
+                  </div>
+                )}
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div

@@ -1,5 +1,13 @@
 import { staticFile } from 'remotion'
 
+export interface SnubbedComparable {
+  /** Top-100 rank (1 = best). */
+  rank: number
+  /** Display name (title-cased, parenthetical aliases stripped). */
+  name: string
+  appearances: number
+}
+
 export interface SnubbedRow {
   id: string
   name: string
@@ -9,6 +17,8 @@ export interface SnubbedRow {
   imageUrl: string | null
   /** How many top-100 characters have fewer appearances than this row. */
   top100WithLessAppearances: number
+  /** 0–2 top-100 chars with similar appearance counts, best-ranked first. */
+  comparables: SnubbedComparable[]
 }
 
 export interface SnubbedSnapshot {
@@ -46,6 +56,22 @@ function num(s: string): number | null {
   return s === '' ? null : Number(s)
 }
 
+// CSV holds names in the original ALL-CAPS form with parenthetical aliases
+// (e.g. "TRAFALGAR LAW (TRAFALGAR D. WATER LAW)"). Render them in title
+// case without the alias so they fit alongside the snubbed character's
+// mixed-case name.
+function prettyName(raw: string): string {
+  const noParen = raw.replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+/g, ' ').trim()
+  return noParen
+    .toLowerCase()
+    .split(' ')
+    .map((tok) => {
+      if (tok === 'd.') return 'D.'
+      return tok.charAt(0).toUpperCase() + tok.slice(1)
+    })
+    .join(' ')
+}
+
 export async function loadSnubbedSnapshot(limit = 5): Promise<SnubbedSnapshot> {
   const res = await fetch(staticFile(PINNED_CSV_NAME))
   if (!res.ok) {
@@ -65,12 +91,33 @@ export async function loadSnubbedSnapshot(limit = 5): Promise<SnubbedSnapshot> {
   const iImg = idx('Image URL')
   const iThrough = idx('Through Chapter')
   const iBeaten = idx('Top100 With Less Appearances')
+  const iCmp1Name = idx('Comparable 1 Name')
+  const iCmp1Rank = idx('Comparable 1 Rank')
+  const iCmp1App = idx('Comparable 1 Appearances')
+  const iCmp2Name = idx('Comparable 2 Name')
+  const iCmp2Rank = idx('Comparable 2 Rank')
+  const iCmp2App = idx('Comparable 2 Appearances')
 
   const rows: SnubbedRow[] = []
   let throughChapter: number | null = null
   for (const l of lines) {
     if (rows.length >= limit) break
     const c = parseCsvLine(l)
+    const comparables: SnubbedComparable[] = []
+    if (c[iCmp1Name]) {
+      comparables.push({
+        rank: Number(c[iCmp1Rank]),
+        name: prettyName(c[iCmp1Name]),
+        appearances: Number(c[iCmp1App]),
+      })
+    }
+    if (c[iCmp2Name]) {
+      comparables.push({
+        rank: Number(c[iCmp2Rank]),
+        name: prettyName(c[iCmp2Name]),
+        appearances: Number(c[iCmp2App]),
+      })
+    }
     rows.push({
       id: c[iId],
       name: c[iName],
@@ -79,6 +126,7 @@ export async function loadSnubbedSnapshot(limit = 5): Promise<SnubbedSnapshot> {
       lastChapter: num(c[iLast]),
       imageUrl: c[iImg] || null,
       top100WithLessAppearances: Number(c[iBeaten] ?? 0),
+      comparables,
     })
     if (throughChapter == null) throughChapter = num(c[iThrough])
   }
