@@ -15,12 +15,16 @@ export type SlideSpec =
       name: string
       headline: string
       pitch: string
+      /** Show the "ch. first → last" span badge under the portrait. */
+      showSpan?: boolean
     }
   | {
       kind: 'pair'
       names: [string, string]
       groupName: string
       pitch: string
+      /** Show "#N outside Straw Hats" badge under each portrait. */
+      showRankExSHP?: boolean
     }
   | {
       kind: 'group'
@@ -53,28 +57,30 @@ export const SLIDES: SlideSpec[] = [
     names: ["Kin'emon", 'Kouzuki Momonosuke'],
     groupName: 'The Heart of Wano',
     pitch:
-      "Two arcs, a country freed, and the future Shogun. Wano without these two is just snow and swords.",
+      "Boarded the Sunny at Punk Hazard and never left. Outside the Straw Hats themselves, almost nobody appears more.",
+    showRankExSHP: true,
   },
   {
     kind: 'pair',
     names: ['Wapol', 'Foxy'],
     groupName: 'The Fun Enemies',
     pitch:
-      "Drum's munching tyrant and the Slow-Slow trickster. Goofy villains who made arcs unforgettable.",
+      "Wapol built the Evil Black Drum Kingdom from scratch — and got into the Reverie. Foxy: Slow-Slow trickster, Davy Back King. Comic villains who built whole arcs.",
   },
   {
     kind: 'character',
     name: 'Hatchan',
     headline: 'East Blue to Fish-Man Island',
     pitch:
-      "From Arlong's crew to a redeemed octopus chef across 1,000+ chapters. A Straw Hat ally before it was cool.",
+      "From Arlong's crew (ch. 69) to a redeemed octopus chef (ch. 1168) — Hatchan's panels span the entire series. A Straw Hat ally before it was cool.",
+    showSpan: true,
   },
   {
     kind: 'character',
     name: 'Capone Bege',
     headline: 'The Fortress Supernova',
     pitch:
-      "Mafia boss in a Castle-Castle body. Masterminded the Big Mom assassination plot — one of the most cunning Supernovas, and still snubbed.",
+      "Mafia boss, Castle-Castle body — and a family man. Married into the Charlottes for love, then ran the hit on his own mother-in-law to protect his wife and son. The Big Mom arc's smartest move.",
   },
   {
     kind: 'honorable',

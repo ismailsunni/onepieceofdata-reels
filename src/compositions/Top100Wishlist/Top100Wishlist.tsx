@@ -93,6 +93,53 @@ function NameTag({ name, size = 48 }: { name: string; size?: number }) {
   )
 }
 
+function SpanBadge({
+  first,
+  last,
+}: {
+  first: number | null
+  last: number | null
+}) {
+  if (first == null || last == null) return null
+  const span = last - first
+  return (
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'baseline',
+        gap: 12,
+        background: 'rgba(0,0,0,0.35)',
+        border: '2px solid rgba(255,255,255,0.25)',
+        borderRadius: 999,
+        padding: '6px 18px',
+        fontFamily: SANS,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: 'rgba(255,255,255,0.9)',
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        ch. {first} → {last}
+      </span>
+      <span
+        style={{
+          fontSize: 16,
+          letterSpacing: 3,
+          textTransform: 'uppercase',
+          color: ACCENT,
+          fontWeight: 700,
+        }}
+      >
+        {span}-ch span
+      </span>
+    </div>
+  )
+}
+
 function StatBadge({ count }: { count: number | null }) {
   if (count == null) return null
   return (
@@ -345,10 +392,12 @@ function CharacterSlide({
   character,
   headline,
   pitch,
+  showSpan,
 }: {
   character: ResolvedCharacter
   headline: string
   pitch: string
+  showSpan: boolean
 }) {
   return (
     <SlideFrame>
@@ -367,6 +416,12 @@ function CharacterSlide({
         <Avatar character={character} size={520} />
         <NameTag name={character.name} size={84} />
         <StatBadge count={character.appearanceCount} />
+        {showSpan && (
+          <SpanBadge
+            first={character.firstChapter}
+            last={character.lastChapter}
+          />
+        )}
         <Pitch>{pitch}</Pitch>
       </div>
     </SlideFrame>
@@ -377,10 +432,12 @@ function PairSlide({
   characters,
   groupName,
   pitch,
+  showRankExSHP,
 }: {
   characters: [ResolvedCharacter, ResolvedCharacter]
   groupName: string
   pitch: string
+  showRankExSHP: boolean
 }) {
   return (
     <SlideFrame>
@@ -404,12 +461,31 @@ function PairSlide({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 16,
+                gap: 12,
               }}
             >
               <Avatar character={c} size={360} />
               <NameTag name={c.name} size={42} />
               <StatBadge count={c.appearanceCount} />
+              {showRankExSHP && c.rankExSHP != null && (
+                <div
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    color: 'rgba(255,255,255,0.85)',
+                    textAlign: 'center',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  <span style={{ color: ACCENT, fontWeight: 900 }}>
+                    #{c.rankExSHP}
+                  </span>{' '}
+                  appearance
+                  <br />
+                  outside Straw Hats
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -653,6 +729,7 @@ function renderSlide(slide: ResolvedSlide) {
           character={slide.character}
           headline={slide.headline}
           pitch={slide.pitch}
+          showSpan={slide.showSpan}
         />
       )
     case 'pair':
@@ -661,6 +738,7 @@ function renderSlide(slide: ResolvedSlide) {
           characters={slide.characters}
           groupName={slide.groupName}
           pitch={slide.pitch}
+          showRankExSHP={slide.showRankExSHP}
         />
       )
     case 'group':

@@ -6,8 +6,12 @@ export interface ResolvedCharacter {
   name: string
   imageUrl: string | null
   appearanceCount: number | null
+  firstChapter: number | null
+  lastChapter: number | null
   importanceTier: string | null
   occupation: string | null
+  /** 1-based rank by appearance_count among non–Straw-Hat-affiliated chars. */
+  rankExSHP: number | null
 }
 
 export type ResolvedSlide =
@@ -22,12 +26,14 @@ export type ResolvedSlide =
       character: ResolvedCharacter
       headline: string
       pitch: string
+      showSpan: boolean
     }
   | {
       kind: 'pair'
       characters: [ResolvedCharacter, ResolvedCharacter]
       groupName: string
       pitch: string
+      showRankExSHP: boolean
     }
   | {
       kind: 'group'
@@ -83,7 +89,9 @@ async function fetchByNames(
   if (names.length === 0) return new Map()
   const { data, error } = await supabase
     .from('character')
-    .select('id, name, appearance_count, importance_tier, occupation')
+    .select(
+      'id, name, appearance_count, first_appearance, last_appearance, importance_tier, occupation'
+    )
     .in('name', names)
   if (error) throw error
 
@@ -94,8 +102,11 @@ async function fetchByNames(
       name: (row.name as string) ?? 'Unknown',
       imageUrl: null,
       appearanceCount: (row.appearance_count as number | null) ?? null,
+      firstChapter: (row.first_appearance as number | null) ?? null,
+      lastChapter: (row.last_appearance as number | null) ?? null,
       importanceTier: (row.importance_tier as string | null) ?? null,
       occupation: (row.occupation as string | null) ?? null,
+      rankExSHP: null,
     })
   }
 
@@ -109,14 +120,53 @@ async function fetchByNames(
   return byName
 }
 
+// Build a `character_id → 1-based rank by appearance_count` index, excluding
+// any character whose affiliation contains "Straw Hat" (so we can show
+// "#N ex-SHP" stats for non-crew characters).
+async function buildExSHPRankIndex(): Promise<Map<string, number>> {
+  const { data: shp, error: shpErr } = await supabase
+    .from('character_affiliation')
+    .select('character_id')
+    .ilike('group_name', '%straw hat%')
+  if (shpErr) throw shpErr
+  const shpSet = new Set((shp ?? []).map((r) => r.character_id as string))
+
+  const rows: { id: string; ac: number }[] = []
+  const pageSize = 1000
+  let from = 0
+  while (true) {
+    const { data, error } = await supabase
+      .from('character')
+      .select('id, appearance_count')
+      .not('appearance_count', 'is', null)
+      .order('appearance_count', { ascending: false })
+      .range(from, from + pageSize - 1)
+    if (error) throw error
+    if (!data || data.length === 0) break
+    for (const r of data) {
+      rows.push({ id: r.id as string, ac: (r.appearance_count as number) ?? 0 })
+    }
+    if (data.length < pageSize) break
+    from += pageSize
+  }
+
+  const filtered = rows.filter((r) => !shpSet.has(r.id))
+  const rankById = new Map<string, number>()
+  filtered.forEach((r, i) => rankById.set(r.id, i + 1))
+  return rankById
+}
+
 function placeholder(name: string): ResolvedCharacter {
   return {
     id: name,
     name,
     imageUrl: null,
     appearanceCount: null,
+    firstChapter: null,
+    lastChapter: null,
     importanceTier: null,
     occupation: null,
+    rankExSHP: null,
   }
 }
 
@@ -143,10 +193,14 @@ async function fetchLatestChapter(): Promise<number | null> {
 
 export async function loadWishlistSnapshot(): Promise<WishlistSnapshot> {
   const names = collectNames(SLIDES)
-  const [byName, latestChapter] = await Promise.all([
+  const [byName, latestChapter, rankIndex] = await Promise.all([
     fetchByNames(names),
     fetchLatestChapter(),
+    buildExSHPRankIndex(),
   ])
+  for (const c of byName.values()) {
+    c.rankExSHP = rankIndex.get(c.id) ?? null
+  }
 
   const slides: ResolvedSlide[] = SLIDES.map((s): ResolvedSlide => {
     switch (s.kind) {
@@ -160,6 +214,7 @@ export async function loadWishlistSnapshot(): Promise<WishlistSnapshot> {
           character: resolveOne(s.name, byName),
           headline: s.headline,
           pitch: s.pitch,
+          showSpan: s.showSpan ?? false,
         }
       case 'pair':
         return {
@@ -170,6 +225,7 @@ export async function loadWishlistSnapshot(): Promise<WishlistSnapshot> {
           ],
           groupName: s.groupName,
           pitch: s.pitch,
+          showRankExSHP: s.showRankExSHP ?? false,
         }
       case 'group':
         return {
