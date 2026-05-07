@@ -1,5 +1,10 @@
 import { AbsoluteFill, Img, useCurrentFrame } from 'remotion'
-import type { ResolvedCharacter, ResolvedSlide } from './fetch'
+import type {
+  CaveatsEntry,
+  RankingEntry,
+  ResolvedCharacter,
+  ResolvedSlide,
+} from './fetch'
 
 export type Top100WishlistProps = {
   slides: ResolvedSlide[]
@@ -311,6 +316,9 @@ function Pitch({ children }: { children: React.ReactNode }) {
   )
 }
 
+const WT100_LOGO_URL =
+  'https://onepiecewt100-2026.com/_app/logo--large--black.png-DQT1HagL.webp'
+
 function CoverSlide({
   kicker,
   title,
@@ -332,6 +340,22 @@ function CoverSlide({
           textAlign: 'center',
         }}
       >
+        {/* Logo is the black version — sit it on a white pill so the
+            mark stays legible against our dark gradient. */}
+        <div
+          style={{
+            background: 'white',
+            borderRadius: 32,
+            padding: '20px 36px',
+            marginBottom: 36,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          }}
+        >
+          <Img
+            src={WT100_LOGO_URL}
+            style={{ height: 140, display: 'block' }}
+          />
+        </div>
         <div
           style={{
             fontSize: 26,
@@ -550,6 +574,291 @@ function GroupSlide({
   )
 }
 
+function RankingSlide({
+  kicker,
+  title,
+  subtitle,
+  entries,
+  valueLabel,
+  showTop100Rank,
+}: {
+  kicker: string
+  title: string
+  subtitle?: string
+  entries: RankingEntry[]
+  valueLabel: string
+  showTop100Rank: boolean
+}) {
+  return (
+    <SlideFrame>
+      <div style={{ textAlign: 'left' }}>
+        <Kicker>{kicker}</Kicker>
+        <div
+          style={{
+            fontSize: 80,
+            fontWeight: 900,
+            lineHeight: 1.0,
+            letterSpacing: -2,
+            marginTop: 6,
+          }}
+        >
+          {title}
+        </div>
+        {subtitle && (
+          <div
+            style={{
+              marginTop: 14,
+              fontSize: 26,
+              fontWeight: 500,
+              lineHeight: 1.3,
+              color: 'rgba(255,255,255,0.85)',
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+      </div>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 16,
+          marginTop: 24,
+        }}
+      >
+        {entries.map((e, i) => (
+          <div
+            key={e.character.id + i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 20,
+              background: 'rgba(255,255,255,0.06)',
+              border: '2px solid rgba(255,255,255,0.12)',
+              borderRadius: 18,
+              padding: '14px 20px',
+            }}
+          >
+            {showTop100Rank && e.character.top100Rank != null && (
+              <div
+                style={{
+                  width: 80,
+                  textAlign: 'center',
+                  fontSize: 36,
+                  fontWeight: 900,
+                  color: ACCENT,
+                  fontVariantNumeric: 'tabular-nums',
+                  lineHeight: 1,
+                }}
+              >
+                #{e.character.top100Rank}
+              </div>
+            )}
+            <Avatar character={e.character} size={120} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 800,
+                  lineHeight: 1.1,
+                  letterSpacing: -0.5,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {e.character.name}
+              </div>
+              {e.subline && (
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 600,
+                    color: 'rgba(255,255,255,0.7)',
+                    marginTop: 6,
+                    lineHeight: 1.2,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {e.subline}
+                </div>
+              )}
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div
+                style={{
+                  fontSize: 48,
+                  fontWeight: 900,
+                  color: ACCENT,
+                  lineHeight: 1,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {e.value ?? '—'}
+              </div>
+              <div
+                style={{
+                  fontSize: 16,
+                  letterSpacing: 2,
+                  textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.65)',
+                  marginTop: 4,
+                  fontWeight: 600,
+                }}
+              >
+                {valueLabel}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </SlideFrame>
+  )
+}
+
+function CaveatsSlide({
+  kicker,
+  title,
+  subtitle,
+  entries,
+  footer,
+}: {
+  kicker: string
+  title: string
+  subtitle: string
+  entries: CaveatsEntry[]
+  footer: string
+}) {
+  return (
+    <SlideFrame>
+      <div style={{ textAlign: 'left' }}>
+        <Kicker>{kicker}</Kicker>
+        <div
+          style={{
+            fontSize: 80,
+            fontWeight: 900,
+            lineHeight: 1.0,
+            letterSpacing: -2,
+            marginTop: 6,
+          }}
+        >
+          {title}
+        </div>
+        <div
+          style={{
+            marginTop: 14,
+            fontSize: 26,
+            fontWeight: 500,
+            lineHeight: 1.3,
+            color: 'rgba(255,255,255,0.85)',
+          }}
+        >
+          {subtitle}
+        </div>
+      </div>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 18,
+          marginTop: 28,
+        }}
+      >
+        {entries.map((e, i) => (
+          <div
+            key={e.name + i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 20,
+              background: 'rgba(255,255,255,0.06)',
+              border: '2px solid rgba(255,255,255,0.12)',
+              borderRadius: 18,
+              padding: '16px 22px',
+            }}
+          >
+            {e.rank != null && (
+              <div
+                style={{
+                  width: 80,
+                  textAlign: 'center',
+                  fontSize: 36,
+                  fontWeight: 900,
+                  color: ACCENT,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                #{e.rank}
+              </div>
+            )}
+            <div
+              style={{
+                width: 130,
+                height: 130,
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: `4px solid ${ACCENT}`,
+                background: 'rgba(0,0,0,0.5)',
+                flexShrink: 0,
+              }}
+            >
+              <Img
+                src={e.imageUrl}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: 36,
+                  fontWeight: 800,
+                  lineHeight: 1.1,
+                  letterSpacing: -0.5,
+                }}
+              >
+                {e.name}
+              </div>
+              <div
+                style={{
+                  fontSize: 22,
+                  letterSpacing: 1,
+                  color: 'rgba(255,255,255,0.7)',
+                  marginTop: 6,
+                  fontWeight: 600,
+                }}
+              >
+                {e.note}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          marginTop: 16,
+          fontSize: 22,
+          lineHeight: 1.35,
+          fontStyle: 'italic',
+          color: 'rgba(255,255,255,0.65)',
+          textAlign: 'center',
+        }}
+      >
+        {footer}
+      </div>
+    </SlideFrame>
+  )
+}
+
 function HonorableSlide({
   characters,
   title,
@@ -633,6 +942,108 @@ function HonorableSlide({
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    </SlideFrame>
+  )
+}
+
+function FollowSlide({
+  kicker,
+  handle,
+  title,
+  subtitle,
+  voteHeader,
+  voteCharacter,
+  voteReason,
+}: {
+  kicker: string
+  handle: string
+  title: string
+  subtitle: string
+  voteHeader: string
+  voteCharacter: ResolvedCharacter
+  voteReason: string
+}) {
+  return (
+    <SlideFrame>
+      <div style={{ textAlign: 'center' }}>
+        <Kicker>{kicker}</Kicker>
+        <div
+          style={{
+            fontSize: 76,
+            fontWeight: 900,
+            lineHeight: 1.0,
+            letterSpacing: -2,
+            marginTop: 8,
+            whiteSpace: 'pre-line',
+          }}
+        >
+          {title}
+        </div>
+        <div
+          style={{
+            marginTop: 18,
+            background: 'rgba(0,0,0,0.45)',
+            border: `3px solid ${ACCENT}`,
+            borderRadius: 999,
+            padding: '14px 32px',
+            display: 'inline-block',
+            fontSize: 38,
+            fontWeight: 800,
+            color: ACCENT,
+            letterSpacing: 1,
+          }}
+        >
+          {handle}
+        </div>
+        <div
+          style={{
+            marginTop: 16,
+            fontSize: 26,
+            fontWeight: 500,
+            color: 'rgba(255,255,255,0.85)',
+            lineHeight: 1.3,
+          }}
+        >
+          {subtitle}
+        </div>
+      </div>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 18,
+          marginTop: 24,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 22,
+            letterSpacing: 6,
+            textTransform: 'uppercase',
+            fontWeight: 700,
+            color: ACCENT,
+          }}
+        >
+          {voteHeader}
+        </div>
+        <Avatar character={voteCharacter} size={360} />
+        <NameTag name={voteCharacter.name} size={64} />
+        <div
+          style={{
+            maxWidth: 820,
+            fontSize: 28,
+            fontWeight: 500,
+            lineHeight: 1.35,
+            color: 'rgba(255,255,255,0.92)',
+            textAlign: 'center',
+          }}
+        >
+          {voteReason}
         </div>
       </div>
     </SlideFrame>
@@ -755,6 +1166,39 @@ function renderSlide(slide: ResolvedSlide) {
           characters={slide.characters}
           title={slide.title}
           subtitle={slide.subtitle}
+        />
+      )
+    case 'ranking':
+      return (
+        <RankingSlide
+          kicker={slide.kicker}
+          title={slide.title}
+          subtitle={slide.subtitle}
+          entries={slide.entries}
+          valueLabel={slide.valueLabel}
+          showTop100Rank={slide.showTop100Rank}
+        />
+      )
+    case 'caveats':
+      return (
+        <CaveatsSlide
+          kicker={slide.kicker}
+          title={slide.title}
+          subtitle={slide.subtitle}
+          entries={slide.entries}
+          footer={slide.footer}
+        />
+      )
+    case 'follow':
+      return (
+        <FollowSlide
+          kicker={slide.kicker}
+          handle={slide.handle}
+          title={slide.title}
+          subtitle={slide.subtitle}
+          voteHeader={slide.voteHeader}
+          voteCharacter={slide.voteCharacter}
+          voteReason={slide.voteReason}
         />
       )
     case 'cta':
