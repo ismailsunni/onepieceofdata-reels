@@ -698,7 +698,7 @@ function RankingSlide({
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
-                {e.value ?? '—'}
+                {e.valueText}
               </div>
               <div
                 style={{
@@ -1033,6 +1033,22 @@ function FollowSlide({
         </div>
         <Avatar character={voteCharacter} size={360} />
         <NameTag name={voteCharacter.name} size={64} />
+        {voteCharacter.top100Rank != null && (
+          <div
+            style={{
+              fontSize: 26,
+              fontWeight: 700,
+              letterSpacing: 2,
+              color: 'rgba(255,255,255,0.85)',
+            }}
+          >
+            Currently{' '}
+            <span style={{ color: ACCENT, fontWeight: 900, fontSize: 30 }}>
+              #{voteCharacter.top100Rank}
+            </span>{' '}
+            in the WT100
+          </div>
+        )}
         <div
           style={{
             maxWidth: 820,

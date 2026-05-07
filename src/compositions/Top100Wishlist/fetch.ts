@@ -23,6 +23,7 @@ export interface ResolvedCharacter {
   /** ISO date of the chapter at `lastChapter`. */
   lastChapterDate: string | null
   arcCount: number | null
+  bounty: number | null
   importanceTier: string | null
   occupation: string | null
   /** 1-based rank by appearance_count among non–Straw-Hat-affiliated chars. */
@@ -35,6 +36,8 @@ export interface RankingEntry {
   character: ResolvedCharacter
   /** Numeric value used for the ranking, derived from `axis`. */
   value: number | null
+  /** Display string for the value (e.g. "171", "918", "฿3.0B"). */
+  valueText: string
   /** Optional secondary line under the name (e.g. "Last arc: Wano"). */
   subline: string | null
 }
@@ -151,7 +154,7 @@ async function fetchByNames(
   const { data, error } = await supabase
     .from('character')
     .select(
-      'id, name, appearance_count, first_appearance, last_appearance, arc_list, importance_tier, occupation'
+      'id, name, appearance_count, first_appearance, last_appearance, arc_list, bounty, importance_tier, occupation'
     )
     .in('name', names)
   if (error) throw error
@@ -178,6 +181,7 @@ async function fetchByNames(
       firstChapterDate: null,
       lastChapterDate: null,
       arcCount: arcs ? arcs.length : null,
+      bounty: (row.bounty as number | null) ?? null,
       importanceTier: (row.importance_tier as string | null) ?? null,
       occupation: (row.occupation as string | null) ?? null,
       rankExSHP: null,
@@ -238,14 +242,28 @@ async function fetchByNames(
     }
   }
 
+  return byName
+}
+
+// Pick the best portrait per character: prefer the WT100 site URL (higher
+// quality, hand-cropped) for top-100 entries, otherwise HEAD-check Supabase
+// storage. Characters with neither end up with `imageUrl=null` and the
+// avatar falls back to initials.
+async function resolveImages(
+  byName: Map<string, ResolvedCharacter>,
+  top100ByCharId: Map<string, Top100Entry>
+): Promise<void> {
   await Promise.all(
     Array.from(byName.values()).map(async (c) => {
+      const wt100 = top100ByCharId.get(c.id)?.imageUrl
+      if (wt100) {
+        c.imageUrl = wt100
+        return
+      }
       const url = characterImageUrl(c.id)
       if (await imageExists(url)) c.imageUrl = url
     })
   )
-
-  return byName
 }
 
 // Build a `character_id → 1-based rank by appearance_count` index, excluding
@@ -308,10 +326,16 @@ function parseCsvLine(line: string): string[] {
   return out
 }
 
-// Map character_id → top-100 rank, loaded from the linked rankings CSV
+interface Top100Entry {
+  rank: number
+  /** WT100 site face URL (typically higher-quality than our Supabase mirror). */
+  imageUrl: string | null
+}
+
+// Map character_id → { rank, imageUrl }, loaded from the linked rankings CSV
 // (mirrored in public/ so it's reachable via staticFile from both the studio
 // browser context and the headless renderer).
-async function loadTop100RankByCharId(): Promise<Map<string, number>> {
+async function loadTop100ByCharId(): Promise<Map<string, Top100Entry>> {
   const res = await fetch(staticFile('onepiece_midterm_rankings_linked.csv'))
   if (!res.ok)
     throw new Error(
@@ -322,10 +346,16 @@ async function loadTop100RankByCharId(): Promise<Map<string, number>> {
   const header = parseCsvLine(headerLine)
   const iRank = header.indexOf('Rank')
   const iCid = header.indexOf('Character ID')
-  const out = new Map<string, number>()
+  const iImg = header.indexOf('Image URL')
+  const out = new Map<string, Top100Entry>()
   for (const l of lines) {
     const c = parseCsvLine(l)
-    if (c[iCid]) out.set(c[iCid], Number(c[iRank]))
+    if (c[iCid]) {
+      out.set(c[iCid], {
+        rank: Number(c[iRank]),
+        imageUrl: c[iImg] || null,
+      })
+    }
   }
   return out
 }
@@ -343,6 +373,7 @@ function placeholder(name: string): ResolvedCharacter {
     firstChapterDate: null,
     lastChapterDate: null,
     arcCount: null,
+    bounty: null,
     importanceTier: null,
     occupation: null,
     rankExSHP: null,
@@ -372,7 +403,28 @@ function rankingValue(c: ResolvedCharacter, axis: RankingAxis): number | null {
       return c.firstChapter
     case 'arc_count':
       return c.arcCount
+    case 'bounty':
+      return c.bounty
   }
+}
+
+// Compact bounty in billions/millions, e.g. 3_000_000_000 → "฿3.0B".
+function formatBerryShort(n: number): string {
+  if (n >= 1_000_000_000) {
+    const v = n / 1_000_000_000
+    return `฿${v.toFixed(v >= 10 ? 0 : 1)}B`
+  }
+  if (n >= 1_000_000) {
+    const v = n / 1_000_000
+    return `฿${v.toFixed(v >= 10 ? 0 : 1)}M`
+  }
+  return `฿${n.toLocaleString()}`
+}
+
+function rankingValueText(value: number | null, axis: RankingAxis): string {
+  if (value == null) return '—'
+  if (axis === 'bounty') return formatBerryShort(value)
+  return String(value)
 }
 
 const MONTHS_SHORT = [
@@ -470,12 +522,13 @@ export async function loadWishlistSnapshot(): Promise<WishlistSnapshot> {
     fetchByNames(names),
     fetchLatestChapter(),
     buildExSHPRankIndex(),
-    loadTop100RankByCharId(),
+    loadTop100ByCharId(),
   ])
   for (const c of byName.values()) {
     c.rankExSHP = rankIndex.get(c.id) ?? null
-    c.top100Rank = top100ByCharId.get(c.id) ?? null
+    c.top100Rank = top100ByCharId.get(c.id)?.rank ?? null
   }
+  await resolveImages(byName, top100ByCharId)
 
   const slides: ResolvedSlide[] = SLIDES.map((s): ResolvedSlide => {
     switch (s.kind) {
@@ -531,9 +584,11 @@ export async function loadWishlistSnapshot(): Promise<WishlistSnapshot> {
           showTop100Rank: s.showTop100Rank ?? false,
           entries: s.names.map((n) => {
             const character = resolveOne(n, byName)
+            const value = rankingValue(character, s.axis)
             return {
               character,
-              value: rankingValue(character, s.axis),
+              value,
+              valueText: rankingValueText(value, s.axis),
               subline: rankingSubline(
                 character,
                 s.axis,

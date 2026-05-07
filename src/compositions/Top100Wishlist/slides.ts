@@ -8,6 +8,7 @@ export type RankingAxis =
   | 'last_appearance' // last_appearance chapter number
   | 'first_appearance' // first_appearance chapter number
   | 'arc_count' // length of arc_list
+  | 'bounty' // highest known bounty in berries
 
 export type RankingSubline =
   | 'auto' // axis-driven default
@@ -166,6 +167,15 @@ export const SLIDES: SlideSpec[] = [
     names: ['Sengoku', 'Fullbody', 'Galdino', 'Jango', 'Nefertari Cobra'],
     axis: 'arc_count',
     valueLabel: 'arcs',
+  },
+  {
+    kind: 'ranking',
+    kicker: 'Outside the Top 100',
+    title: 'High bounty,\nlow votes.',
+    subtitle: 'Marine threat level: maximum. Fan support: minimal.',
+    names: ['Aramaki', 'Brogy', 'Dorry', 'Queen', 'Jack'],
+    axis: 'bounty',
+    valueLabel: 'berries',
   },
   {
     kind: 'caveats',
