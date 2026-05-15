@@ -52,9 +52,9 @@ export const SLIDES: SlideSpec[] = [
     kicker: 'The Split',
     title: 'As of ch 1182',
     buckets: [
-      { num: 25, label: 'Still Drawn', desc: 'Last seen in the past ~40 chapters' },
-      { num: 28, label: 'Fading', desc: 'Last drawn 2023 – 2024' },
-      { num: 69, label: 'Gone', desc: 'Last seen before 2023' },
+      { num: 25, label: 'Drawn in Elbaf', desc: 'Still on the page in the current arc' },
+      { num: 28, label: 'Last Seen in Egghead', desc: 'Cameos during the previous arc' },
+      { num: 69, label: 'Before Egghead', desc: 'Not redrawn since' },
     ],
     callout: { num: 26, label: 'one-chapter wonders — drawn once, never again' },
   },
