@@ -46,11 +46,19 @@ import { loadWishlistSnapshot } from '../src/compositions/Top100Wishlist/fetch'
 const here = dirname(fileURLToPath(import.meta.url))
 const outDir = resolve(here, '..', 'web', 'public', 'snapshots')
 
-async function write(id: string, data: unknown) {
+interface SnapshotEnvelope {
+  ok: boolean
+  builtAt: string
+  data?: unknown
+  error?: string
+}
+
+async function writeEnvelope(id: string, envelope: SnapshotEnvelope) {
   await mkdir(outDir, { recursive: true })
   const file = resolve(outDir, `${id}.json`)
-  await writeFile(file, JSON.stringify(data, null, 2), 'utf8')
-  console.log(`✓ ${id} → ${file}`)
+  await writeFile(file, JSON.stringify(envelope, null, 2), 'utf8')
+  const marker = envelope.ok ? '✓' : '✗'
+  console.log(`${marker} ${id} → ${file}`)
 }
 
 async function main() {
@@ -90,20 +98,32 @@ async function main() {
     },
   ]
 
-  const failures: { id: string; error: unknown }[] = []
+  const builtAt = new Date().toISOString()
+  const failures: string[] = []
   for (const t of tasks) {
     try {
       const data = await t.run()
-      await write(t.id, data)
+      await writeEnvelope(t.id, { ok: true, builtAt, data })
     } catch (err) {
-      console.error(`✗ ${t.id}: ${(err as Error).message ?? err}`)
-      failures.push({ id: t.id, error: err })
+      const message = (err as Error).message ?? String(err)
+      console.error(`  ${t.id} failed: ${message}`)
+      await writeEnvelope(t.id, { ok: false, builtAt, error: message })
+      failures.push(t.id)
     }
   }
 
   if (failures.length) {
-    console.error(`\n${failures.length} snapshot(s) failed.`)
-    process.exit(1)
+    console.error(
+      `\n${failures.length} of ${tasks.length} snapshot(s) failed: ${failures.join(', ')}`
+    )
+    console.error(
+      'Continuing so the deploy can still publish the remaining reels.'
+    )
+    // Optional strict mode: set BUILD_SNAPSHOTS_STRICT=1 to fail the build
+    // hard on any individual failure (e.g. for a release pipeline).
+    if (process.env.BUILD_SNAPSHOTS_STRICT === '1') {
+      process.exit(1)
+    }
   }
 }
 

@@ -41,44 +41,20 @@ export interface CompositionEntry {
   durationInFrames: (snapshot: Record<string, unknown>) => number
 }
 
+// Ordered newest-first — most recently added composition at the top.
 export const COMPOSITIONS: CompositionEntry[] = [
   {
-    id: 'TopBounties',
-    title: 'Top Bounties',
-    description: 'Highest active bounties as a 12s reel.',
-    component: TopBounties as ComponentType<Record<string, unknown>>,
-    width: REEL_WIDTH,
-    height: REEL_HEIGHT,
-    fps: REEL_FPS,
-    snapshotPath: 'snapshots/TopBounties.json',
-    durationInFrames: () => REEL_FPS * 12,
-  },
-  {
-    id: 'EastBlueWeakest',
-    title: 'East Blue Weakest',
-    description: "Sea-by-sea breakdown of the world's softest fighters.",
-    component: EastBlueWeakest as ComponentType<Record<string, unknown>>,
-    width: REEL_WIDTH,
-    height: REEL_HEIGHT,
-    fps: REEL_FPS,
-    snapshotPath: 'snapshots/EastBlueWeakest.json',
+    id: 'VanishedPreSkip',
+    title: 'Vanished Pre-Skip',
+    description: 'Characters last seen before the time skip — a who’s-still-missing carousel.',
+    component: VanishedPreSkip as ComponentType<Record<string, unknown>>,
+    width: SLIDE_WIDTH,
+    height: SLIDE_HEIGHT,
+    fps: 1,
+    snapshotPath: 'snapshots/VanishedPreSkip.json',
     durationInFrames: (snap) => {
-      const cards = (snap as EastBlueWeakestProps).cards ?? []
-      return eastBlueWeakestFrames(cards.length)
-    },
-  },
-  {
-    id: 'TopSnubbed',
-    title: 'Top Snubbed',
-    description: 'Characters with the biggest gap between popularity and screen time.',
-    component: TopSnubbed as ComponentType<Record<string, unknown>>,
-    width: REEL_WIDTH,
-    height: REEL_HEIGHT,
-    fps: REEL_FPS,
-    snapshotPath: 'snapshots/TopSnubbed.json',
-    durationInFrames: (snap) => {
-      const rows = (snap as { rows?: unknown[] }).rows ?? []
-      return topSnubbedFrames(rows.length)
+      const slides = (snap as { slides?: unknown[] }).slides ?? []
+      return Math.max(slides.length, 1)
     },
   },
   {
@@ -96,17 +72,17 @@ export const COMPOSITIONS: CompositionEntry[] = [
     },
   },
   {
-    id: 'VanishedPreSkip',
-    title: 'Vanished Pre-Skip',
-    description: 'Characters last seen before the time skip — a who’s-still-missing carousel.',
-    component: VanishedPreSkip as ComponentType<Record<string, unknown>>,
-    width: SLIDE_WIDTH,
-    height: SLIDE_HEIGHT,
-    fps: 1,
-    snapshotPath: 'snapshots/VanishedPreSkip.json',
+    id: 'TopSnubbed',
+    title: 'Top Snubbed',
+    description: 'Characters with the biggest gap between popularity and screen time.',
+    component: TopSnubbed as ComponentType<Record<string, unknown>>,
+    width: REEL_WIDTH,
+    height: REEL_HEIGHT,
+    fps: REEL_FPS,
+    snapshotPath: 'snapshots/TopSnubbed.json',
     durationInFrames: (snap) => {
-      const slides = (snap as { slides?: unknown[] }).slides ?? []
-      return Math.max(slides.length, 1)
+      const rows = (snap as { rows?: unknown[] }).rows ?? []
+      return topSnubbedFrames(rows.length)
     },
   },
   {
@@ -122,6 +98,31 @@ export const COMPOSITIONS: CompositionEntry[] = [
       const slides = (snap as { slides?: unknown[] }).slides ?? []
       return Math.max(slides.length, 1)
     },
+  },
+  {
+    id: 'EastBlueWeakest',
+    title: 'East Blue Weakest',
+    description: "Sea-by-sea breakdown of the world's softest fighters.",
+    component: EastBlueWeakest as ComponentType<Record<string, unknown>>,
+    width: REEL_WIDTH,
+    height: REEL_HEIGHT,
+    fps: REEL_FPS,
+    snapshotPath: 'snapshots/EastBlueWeakest.json',
+    durationInFrames: (snap) => {
+      const cards = (snap as EastBlueWeakestProps).cards ?? []
+      return eastBlueWeakestFrames(cards.length)
+    },
+  },
+  {
+    id: 'TopBounties',
+    title: 'Top Bounties',
+    description: 'Highest active bounties as a 12s reel.',
+    component: TopBounties as ComponentType<Record<string, unknown>>,
+    width: REEL_WIDTH,
+    height: REEL_HEIGHT,
+    fps: REEL_FPS,
+    snapshotPath: 'snapshots/TopBounties.json',
+    durationInFrames: () => REEL_FPS * 12,
   },
 ]
 
