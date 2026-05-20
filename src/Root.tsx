@@ -23,6 +23,8 @@ import {
 import { loadWishlistSnapshot } from './compositions/Top100Wishlist/fetch'
 import { First100Chapters } from './compositions/First100Chapters/First100Chapters'
 import { loadFirst100Snapshot } from './compositions/First100Chapters/fetch'
+import { VanishedPreSkip } from './compositions/VanishedPreSkip/VanishedPreSkip'
+import { loadVanishedSnapshot } from './compositions/VanishedPreSkip/fetch'
 
 // Instagram Reels: 9:16 portrait, 1080x1920, 30fps.
 const REEL_WIDTH = 1080
@@ -93,6 +95,22 @@ export function Root() {
         defaultProps={{ slides: [], latestChapter: null }}
         calculateMetadata={async ({ props }) => {
           const { slides, latestChapter } = await loadFirst100Snapshot()
+          return {
+            props: { ...props, slides, latestChapter },
+            durationInFrames: Math.max(slides.length, 1),
+          }
+        }}
+      />
+      <Composition
+        id="VanishedPreSkip"
+        component={VanishedPreSkip}
+        width={SLIDE_WIDTH}
+        height={SLIDE_HEIGHT}
+        fps={1}
+        durationInFrames={1}
+        defaultProps={{ slides: [], latestChapter: null }}
+        calculateMetadata={async ({ props }) => {
+          const { slides, latestChapter } = await loadVanishedSnapshot()
           return {
             props: { ...props, slides, latestChapter },
             durationInFrames: Math.max(slides.length, 1),

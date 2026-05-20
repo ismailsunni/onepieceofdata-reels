@@ -1,0 +1,89 @@
+/**
+ * Generates JSON snapshots for each Remotion composition so the static
+ * web/ gallery can hand them to <Player> at runtime without ever touching
+ * Supabase from the browser.
+ *
+ * Run via `npm run web:snapshots` (loads .env automatically).
+ */
+import { mkdir, writeFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { fetchTopBounties } from '../src/compositions/TopBounties/fetch'
+import {
+  fetchSeaCards,
+  fetchLatestChapter,
+} from '../src/compositions/EastBlueWeakest/fetch'
+import { loadSnubbedSnapshot } from '../src/compositions/TopSnubbed/fetch'
+import { loadFirst100Snapshot } from '../src/compositions/First100Chapters/fetch'
+import { loadVanishedSnapshot } from '../src/compositions/VanishedPreSkip/fetch'
+import { loadWishlistSnapshot } from '../src/compositions/Top100Wishlist/fetch'
+
+const here = dirname(fileURLToPath(import.meta.url))
+const outDir = resolve(here, '..', 'web', 'public', 'snapshots')
+
+async function write(id: string, data: unknown) {
+  await mkdir(outDir, { recursive: true })
+  const file = resolve(outDir, `${id}.json`)
+  await writeFile(file, JSON.stringify(data, null, 2), 'utf8')
+  console.log(`✓ ${id} → ${file}`)
+}
+
+async function main() {
+  const tasks: { id: string; run: () => Promise<unknown> }[] = [
+    {
+      id: 'TopBounties',
+      run: async () => ({ rows: await fetchTopBounties(10) }),
+    },
+    {
+      id: 'EastBlueWeakest',
+      run: async () => {
+        const [cards, latestChapter] = await Promise.all([
+          fetchSeaCards(),
+          fetchLatestChapter(),
+        ])
+        return { cards, latestChapter }
+      },
+    },
+    {
+      id: 'TopSnubbed',
+      run: async () => {
+        const { rows, throughChapter } = await loadSnubbedSnapshot(5)
+        return { rows, latestChapter: throughChapter }
+      },
+    },
+    {
+      id: 'First100Chapters',
+      run: async () => loadFirst100Snapshot(),
+    },
+    {
+      id: 'VanishedPreSkip',
+      run: async () => loadVanishedSnapshot(),
+    },
+    {
+      id: 'Top100Wishlist',
+      run: async () => loadWishlistSnapshot(),
+    },
+  ]
+
+  const failures: { id: string; error: unknown }[] = []
+  for (const t of tasks) {
+    try {
+      const data = await t.run()
+      await write(t.id, data)
+    } catch (err) {
+      console.error(`✗ ${t.id}: ${(err as Error).message ?? err}`)
+      failures.push({ id: t.id, error: err })
+    }
+  }
+
+  if (failures.length) {
+    console.error(`\n${failures.length} snapshot(s) failed.`)
+    process.exit(1)
+  }
+}
+
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

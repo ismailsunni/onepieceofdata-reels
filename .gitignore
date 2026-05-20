@@ -6,3 +6,5 @@ out
 *.log
 .cache
 .remotion
+web/dist
+web/public/snapshots
