@@ -5,9 +5,33 @@
  *
  * Run via `npm run web:snapshots` (loads .env automatically).
  */
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+// Remotion's `staticFile()` returns relative URLs like "/foo.csv", which
+// works inside the Studio's dev server but explodes in Node — `fetch` has
+// no base to resolve against. Wrap fetch so that root-relative paths read
+// directly from the `public/` directory on disk.
+const projectRoot = resolve(fileURLToPath(import.meta.url), '..', '..')
+const publicDir = resolve(projectRoot, 'public')
+const originalFetch = globalThis.fetch
+globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  const url = typeof input === 'string' ? input : input.toString()
+  if (url.startsWith('/') && !url.startsWith('//')) {
+    const filePath = resolve(publicDir, url.replace(/^\/+/, ''))
+    try {
+      const body = await readFile(filePath)
+      return new Response(body, { status: 200, statusText: 'OK' })
+    } catch (err) {
+      return new Response(String((err as Error).message), {
+        status: 404,
+        statusText: 'Not Found',
+      })
+    }
+  }
+  return originalFetch(input as never, init)
+}) as typeof fetch
 
 import { fetchTopBounties } from '../src/compositions/TopBounties/fetch'
 import {
