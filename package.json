@@ -28,7 +28,7 @@
     "remotion": "^4.0.0"
   },
   "devDependencies": {
-    "@remotion/player": "^4.0.464",
+    "@remotion/player": "^4.0.455",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
