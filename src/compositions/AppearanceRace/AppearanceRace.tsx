@@ -298,10 +298,10 @@ function Header({
           letterSpacing: '-0.02em',
         }}
       >
-        Who runs One Piece
+        Who ran One Piece
         <br />
         <span style={{ color: COLOR.subtle, fontWeight: 600, fontSize: 36 }}>
-          besides the Straw Hats?
+          pre-timeskip · besides the Straw Hats?
         </span>
       </div>
       <div

@@ -18,6 +18,12 @@ const STRAW_HAT_IDS = new Set([
   'Jinbe',
 ])
 
+// Last pre-timeskip chapter. Marineford / Sabo letter-from-Luffy era;
+// chapter 598 is the first post-skip chapter. Keeps the race in the
+// "classic" East Blue → Marineford run where non-SHP characters surge
+// most cleanly arc-by-arc.
+const MAX_CHAPTER = 597
+
 export interface RaceCharacterInfo {
   id: string
   name: string
@@ -96,11 +102,20 @@ export async function loadAppearanceRaceSnapshot(): Promise<AppearanceRaceSnapsh
     throw new Error(`Failed to fetch arcs: ${arcsRes.error.message}`)
   }
 
-  const rawCharacters = (charactersRes.data ?? []) as {
+  const rawCharactersAll = (charactersRes.data ?? []) as {
     id: string
     name: string | null
     chapter_list: number[] | null
   }[]
+
+  // Clamp every chapter_list to pre-timeskip. Characters with no remaining
+  // appearances get dropped by computeRaceFrames' own filter.
+  const rawCharacters = rawCharactersAll.map((c) => ({
+    id: c.id,
+    name: c.name,
+    chapter_list:
+      c.chapter_list?.filter((ch) => ch <= MAX_CHAPTER) ?? null,
+  }))
 
   const arcs: ArcRange[] = (arcsRes.data ?? [])
     .filter(
@@ -109,10 +124,11 @@ export async function loadAppearanceRaceSnapshot(): Promise<AppearanceRaceSnapsh
         typeof a.start_chapter === 'number' &&
         typeof a.end_chapter === 'number'
     )
+    .filter((a) => a.start_chapter <= MAX_CHAPTER)
     .map((a) => ({
       title: a.title,
       startChapter: a.start_chapter,
-      endChapter: a.end_chapter,
+      endChapter: Math.min(a.end_chapter, MAX_CHAPTER),
     }))
 
   const result = computeRaceFrames({

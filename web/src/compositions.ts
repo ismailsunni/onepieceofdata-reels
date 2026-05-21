@@ -55,7 +55,7 @@ export const COMPOSITIONS: CompositionEntry[] = [
     id: 'AppearanceRace',
     title: 'Appearance Race',
     description:
-      'Who runs One Piece besides the Straw Hats? Bar-chart race over the rolling 30-chapter window.',
+      'Who ran pre-timeskip One Piece besides the Straw Hats? Bar-chart race over the rolling 30-chapter window, Ch.1 → Marineford.',
     component: AppearanceRace as ComponentType<Record<string, unknown>>,
     width: RACE_WIDTH,
     height: RACE_HEIGHT,
