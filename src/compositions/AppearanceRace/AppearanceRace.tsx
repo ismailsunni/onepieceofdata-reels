@@ -17,10 +17,12 @@ export const RACE_WIDTH = 1080
 export const RACE_HEIGHT = 1920
 export const RACE_FPS = 30
 
-const INTRO_FRAMES = 30 // 1.0s — title settle
-const HOLD_FRAMES = 45 // 1.5s — final freeze + CTA
-// Race frames are derived from totalFrames in totalFramesFor() so callers can
-// dial reel length without recompiling the visual.
+const INTRO_FRAMES = 60 // 2.0s — title settle, viewer reads framing
+const RACE_FRAMES = 780 // 26.0s — main playback
+const HOLD_FRAMES = 60 // 2.0s — final freeze + CTA
+// At 30fps with ~380 sampled race-frames over 780 playback frames, the
+// playback runs ~0.49 sampled-frames per playback frame — slow enough to
+// read names and follow rank changes between arcs.
 
 const TOP_N = 10
 const ROW_HEIGHT = 130
@@ -51,8 +53,8 @@ export type AppearanceRaceProps = {
 /** Total playback length for a given snapshot. Caller passes this to
  *  Composition / Player as durationInFrames. */
 export function totalFramesFor(_snapshot: AppearanceRaceSnapshot | null): number {
-  // Fixed ~12s reel: intro + race + hold = 30 + 285 + 45 = 360
-  return INTRO_FRAMES + 285 + HOLD_FRAMES
+  // ~30s reel: 60 (intro) + 780 (race) + 60 (hold) = 900 frames @ 30fps.
+  return INTRO_FRAMES + RACE_FRAMES + HOLD_FRAMES
 }
 
 interface RenderedRow {
@@ -121,7 +123,12 @@ function PortraitTile({ char, size }: { char: RaceCharacterInfo; size: number })
       {char.imageUrl ? (
         <Img
           src={char.imageUrl}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'top',
+          }}
         />
       ) : (
         <span
