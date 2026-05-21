@@ -2,7 +2,6 @@ import {
   AbsoluteFill,
   Img,
   interpolate,
-  spring,
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion'
@@ -19,7 +18,6 @@ export const RACE_HEIGHT = 1920
 export const RACE_FPS = 30
 
 const RACE_FRAMES = 840 // 28.0s — main playback, starts from frame 0
-const HOLD_FRAMES = 60 // 2.0s — final freeze + CTA
 
 const TOP_N = 10
 const ROW_HEIGHT = 130
@@ -50,8 +48,8 @@ export type AppearanceRaceProps = {
 /** Total playback length for a given snapshot. Caller passes this to
  *  Composition / Player as durationInFrames. */
 export function totalFramesFor(_snapshot: AppearanceRaceSnapshot | null): number {
-  // ~30s reel: 840 (race, starting from frame 0) + 60 (hold) = 900 @ 30fps.
-  return RACE_FRAMES + HOLD_FRAMES
+  // 28s reel, race-only. No leading freeze and no trailing hold.
+  return RACE_FRAMES
 }
 
 interface RenderedRow {
@@ -344,29 +342,6 @@ function Header({
   )
 }
 
-function Footer({ opacity }: { opacity: number }) {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 56,
-        left: RACE_LEFT,
-        right: RACE_RIGHT,
-        textAlign: 'center',
-        color: COLOR.subtle,
-        fontSize: 26,
-        letterSpacing: '0.05em',
-        opacity,
-      }}
-    >
-      <span style={{ color: COLOR.accent, fontWeight: 700 }}>
-        @onepieceofdata
-      </span>
-      <span style={{ marginLeft: 14 }}>follow for more data</span>
-    </div>
-  )
-}
-
 export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
   const frame = useCurrentFrame()
   const { durationInFrames } = useVideoConfig()
@@ -391,21 +366,14 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
   const charMap = new Map<string, RaceCharacterInfo>()
   for (const c of snapshot.characters) charMap.set(c.id, c)
 
-  const raceFrames = durationInFrames - HOLD_FRAMES
-
-  // Map playback-frame → race-frame index (float). Race starts at frame 0
-  // (no leading freeze).
-  let raceFloat: number
-  if (frame < raceFrames) {
-    raceFloat = interpolate(
-      frame,
-      [0, raceFrames],
-      [0, snapshot.frames.length - 1],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-    )
-  } else {
-    raceFloat = snapshot.frames.length - 1
-  }
+  // Map playback-frame → race-frame index (float). Race spans the full
+  // duration, no leading freeze and no trailing hold.
+  const raceFloat = interpolate(
+    frame,
+    [0, durationInFrames - 1],
+    [0, snapshot.frames.length - 1],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  )
 
   const a = Math.floor(raceFloat)
   const b = Math.min(a + 1, snapshot.frames.length - 1)
@@ -423,14 +391,6 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
   // leader's bar never overflows even if computeRaceFrames returned a
   // higher-than-window value due to dedup edge cases.
   const maxScore = Math.max(snapshot.maxScore, snapshot.windowSize)
-
-  // CTA fade-in during the hold.
-  const ctaT = spring({
-    frame: frame - raceFrames,
-    fps: RACE_FPS,
-    config: { damping: 200 },
-    durationInFrames: HOLD_FRAMES,
-  })
 
   return (
     <AbsoluteFill
@@ -454,8 +414,6 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
           isLeader={i === 0 && row.visible}
         />
       ))}
-
-      <Footer opacity={ctaT} />
     </AbsoluteFill>
   )
 }
