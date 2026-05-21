@@ -25,6 +25,11 @@ import { First100Chapters } from './compositions/First100Chapters/First100Chapte
 import { loadFirst100Snapshot } from './compositions/First100Chapters/fetch'
 import { VanishedPreSkip } from './compositions/VanishedPreSkip/VanishedPreSkip'
 import { loadVanishedSnapshot } from './compositions/VanishedPreSkip/fetch'
+import {
+  AppearanceRace,
+  totalFramesFor as appearanceRaceFrames,
+} from './compositions/AppearanceRace/AppearanceRace'
+import { loadAppearanceRaceSnapshot } from './compositions/AppearanceRace/fetch'
 
 // Instagram Reels: 9:16 portrait, 1080x1920, 30fps.
 const REEL_WIDTH = 1080
@@ -114,6 +119,22 @@ export function Root() {
           return {
             props: { ...props, slides, latestChapter },
             durationInFrames: Math.max(slides.length, 1),
+          }
+        }}
+      />
+      <Composition
+        id="AppearanceRace"
+        component={AppearanceRace}
+        width={REEL_WIDTH}
+        height={REEL_HEIGHT}
+        fps={REEL_FPS}
+        durationInFrames={360}
+        defaultProps={{ snapshot: null }}
+        calculateMetadata={async ({ props }) => {
+          const snapshot = await loadAppearanceRaceSnapshot()
+          return {
+            props: { ...props, snapshot },
+            durationInFrames: appearanceRaceFrames(snapshot),
           }
         }}
       />

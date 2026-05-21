@@ -42,6 +42,7 @@ import { loadSnubbedSnapshot } from '../src/compositions/TopSnubbed/fetch'
 import { loadFirst100Snapshot } from '../src/compositions/First100Chapters/fetch'
 import { loadVanishedSnapshot } from '../src/compositions/VanishedPreSkip/fetch'
 import { loadWishlistSnapshot } from '../src/compositions/Top100Wishlist/fetch'
+import { loadAppearanceRaceSnapshot } from '../src/compositions/AppearanceRace/fetch'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const outDir = resolve(here, '..', 'web', 'public', 'snapshots')
@@ -95,6 +96,10 @@ async function main() {
     {
       id: 'Top100Wishlist',
       run: async () => loadWishlistSnapshot(),
+    },
+    {
+      id: 'AppearanceRace',
+      run: async () => ({ snapshot: await loadAppearanceRaceSnapshot() }),
     },
   ]
 

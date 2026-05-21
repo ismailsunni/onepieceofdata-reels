@@ -24,6 +24,14 @@ import {
   SLIDE_WIDTH,
   SLIDE_HEIGHT,
 } from '../../src/compositions/Top100Wishlist/Top100Wishlist'
+import {
+  AppearanceRace,
+  RACE_WIDTH,
+  RACE_HEIGHT,
+  RACE_FPS,
+  totalFramesFor as appearanceRaceFrames,
+} from '../../src/compositions/AppearanceRace/AppearanceRace'
+import type { AppearanceRaceSnapshot } from '../../src/compositions/AppearanceRace/fetch'
 
 const REEL_WIDTH = 1080
 const REEL_HEIGHT = 1920
@@ -43,6 +51,21 @@ export interface CompositionEntry {
 
 // Ordered newest-first — most recently added composition at the top.
 export const COMPOSITIONS: CompositionEntry[] = [
+  {
+    id: 'AppearanceRace',
+    title: 'Appearance Race',
+    description:
+      'Who runs One Piece besides the Straw Hats? Bar-chart race over the rolling 30-chapter window.',
+    component: AppearanceRace as ComponentType<Record<string, unknown>>,
+    width: RACE_WIDTH,
+    height: RACE_HEIGHT,
+    fps: RACE_FPS,
+    snapshotPath: 'snapshots/AppearanceRace.json',
+    durationInFrames: (snap) => {
+      const inner = (snap as { snapshot?: AppearanceRaceSnapshot }).snapshot
+      return appearanceRaceFrames(inner ?? null)
+    },
+  },
   {
     id: 'VanishedPreSkip',
     title: 'Vanished Pre-Skip',
