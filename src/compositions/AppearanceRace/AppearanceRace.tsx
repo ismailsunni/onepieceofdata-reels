@@ -250,6 +250,114 @@ function arcTitleFor(chapter: number, arcs: ArcRange[]): string | null {
   return null
 }
 
+function LeaderCard({ leader }: { leader: RenderedRow | null }) {
+  const size = 280
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 70,
+        right: RACE_RIGHT,
+        width: size,
+        height: size + 56,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 10,
+      }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          width: size,
+          height: size,
+          borderRadius: 24,
+          overflow: 'hidden',
+          background: leader?.char.color ?? COLOR.rowBg,
+          boxShadow: `0 0 0 3px ${COLOR.accent}, 0 12px 30px rgba(0,0,0,0.4)`,
+        }}
+      >
+        {leader?.char.imageUrl ? (
+          <Img
+            src={leader.char.imageUrl}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'top',
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: size * 0.4,
+              fontWeight: 800,
+              color: 'rgba(0,0,0,0.5)',
+            }}
+          >
+            {leader?.char.name.charAt(0) ?? '—'}
+          </div>
+        )}
+        <div
+          style={{
+            position: 'absolute',
+            top: 12,
+            left: 12,
+            padding: '4px 10px',
+            borderRadius: 999,
+            background: COLOR.accent,
+            color: '#000',
+            fontSize: 18,
+            fontWeight: 800,
+            letterSpacing: '0.06em',
+          }}
+        >
+          LEADER
+        </div>
+      </div>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: COLOR.text,
+          textAlign: 'center',
+          maxWidth: size,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {leader?.char.name.replace(/_/g, ' ') ?? '—'}
+      </div>
+    </div>
+  )
+}
+
+function Watermark() {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: 56,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        fontSize: 22,
+        letterSpacing: '0.1em',
+        color: 'rgba(245,245,245,0.42)',
+        fontWeight: 600,
+      }}
+    >
+      onepieceofdata.com
+    </div>
+  )
+}
+
 function Header({
   chapter,
   arcTitle,
@@ -259,13 +367,15 @@ function Header({
   arcTitle: string | null
   windowSize: number
 }) {
+  // Width budget for title text — leaves room for the LeaderCard on the right.
+  const textMaxWidth = RACE_WIDTH - RACE_LEFT - RACE_RIGHT - 280 - 32
   return (
     <div
       style={{
         position: 'absolute',
         top: 70,
         left: RACE_LEFT,
-        right: RACE_RIGHT,
+        width: textMaxWidth,
       }}
     >
       <div
@@ -282,7 +392,7 @@ function Header({
       </div>
       <div
         style={{
-          fontSize: 64,
+          fontSize: 56,
           fontWeight: 800,
           color: COLOR.text,
           lineHeight: 1.05,
@@ -291,7 +401,7 @@ function Header({
       >
         Who ran One Piece
         <br />
-        <span style={{ color: COLOR.subtle, fontWeight: 600, fontSize: 36 }}>
+        <span style={{ color: COLOR.subtle, fontWeight: 600, fontSize: 26 }}>
           pre-timeskip · besides the Straw Hats?
         </span>
       </div>
@@ -405,6 +515,7 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
         arcTitle={arcTitleFor(currentChapter, snapshot.arcs)}
         windowSize={snapshot.windowSize}
       />
+      <LeaderCard leader={rows[0] ?? null} />
 
       {rows.slice(0, TOP_N + 1).map((row, i) => (
         <Row
@@ -414,6 +525,7 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
           isLeader={i === 0 && row.visible}
         />
       ))}
+      <Watermark />
     </AbsoluteFill>
   )
 }
