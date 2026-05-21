@@ -8,6 +8,7 @@ import {
 } from 'remotion'
 import type {
   AppearanceRaceSnapshot,
+  ArcRange,
   RaceCharacterInfo,
   CompactRaceFrame,
 } from './fetch'
@@ -247,12 +248,22 @@ function Row({
   )
 }
 
+function arcTitleFor(chapter: number, arcs: ArcRange[]): string | null {
+  // Arcs are ordered by startChapter ascending; first match wins.
+  for (const a of arcs) {
+    if (chapter >= a.startChapter && chapter <= a.endChapter) return a.title
+  }
+  return null
+}
+
 function Header({
   chapter,
+  arcTitle,
   windowSize,
   introT,
 }: {
   chapter: number
+  arcTitle: string | null
   windowSize: number
   introT: number
 }) {
@@ -298,7 +309,8 @@ function Header({
           marginTop: 18,
           display: 'flex',
           alignItems: 'baseline',
-          gap: 18,
+          gap: 16,
+          flexWrap: 'wrap',
         }}
       >
         <div
@@ -312,7 +324,26 @@ function Header({
         >
           Ch. {chapter}
         </div>
-        <div style={{ fontSize: 22, color: COLOR.subtle }}>
+        {arcTitle && (
+          <div
+            style={{
+              fontSize: 30,
+              fontWeight: 700,
+              color: COLOR.accent,
+              padding: '4px 14px',
+              borderRadius: 999,
+              background: COLOR.accentSoft,
+              letterSpacing: '-0.01em',
+              maxWidth: RACE_WIDTH - RACE_LEFT - RACE_RIGHT - 200,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {arcTitle}
+          </div>
+        )}
+        <div style={{ fontSize: 22, color: COLOR.subtle, width: '100%' }}>
           rolling {windowSize}-chapter window
         </div>
       </div>
@@ -420,6 +451,7 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
     >
       <Header
         chapter={currentChapter}
+        arcTitle={arcTitleFor(currentChapter, snapshot.arcs)}
         windowSize={snapshot.windowSize}
         introT={introT}
       />

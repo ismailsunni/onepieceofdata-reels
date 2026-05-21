@@ -32,6 +32,12 @@ export interface CompactRaceFrame {
   entries: { id: string; score: number }[]
 }
 
+export interface ArcRange {
+  title: string
+  startChapter: number
+  endChapter: number
+}
+
 export interface AppearanceRaceSnapshot {
   characters: RaceCharacterInfo[]
   frames: CompactRaceFrame[]
@@ -43,6 +49,8 @@ export interface AppearanceRaceSnapshot {
   maxScore: number
   /** Sample interval — every Nth chapter is included; null = every chapter. */
   sampleEvery: number
+  /** Ordered by startChapter ascending. Used to label the current arc. */
+  arcs: ArcRange[]
 }
 
 function characterImageUrl(id: string): string {
@@ -71,19 +79,41 @@ export async function loadAppearanceRaceSnapshot(): Promise<AppearanceRaceSnapsh
   const windowSize = 30
   const topN = 10
 
-  const { data, error } = await supabase
-    .from('character')
-    .select('id, name, chapter_list')
+  const [charactersRes, arcsRes] = await Promise.all([
+    supabase.from('character').select('id, name, chapter_list'),
+    supabase
+      .from('arc')
+      .select('title, start_chapter, end_chapter')
+      .order('start_chapter', { ascending: true }),
+  ])
 
-  if (error) {
-    throw new Error(`Failed to fetch characters: ${error.message}`)
+  if (charactersRes.error) {
+    throw new Error(
+      `Failed to fetch characters: ${charactersRes.error.message}`
+    )
+  }
+  if (arcsRes.error) {
+    throw new Error(`Failed to fetch arcs: ${arcsRes.error.message}`)
   }
 
-  const rawCharacters = (data ?? []) as {
+  const rawCharacters = (charactersRes.data ?? []) as {
     id: string
     name: string | null
     chapter_list: number[] | null
   }[]
+
+  const arcs: ArcRange[] = (arcsRes.data ?? [])
+    .filter(
+      (a): a is { title: string; start_chapter: number; end_chapter: number } =>
+        typeof a.title === 'string' &&
+        typeof a.start_chapter === 'number' &&
+        typeof a.end_chapter === 'number'
+    )
+    .map((a) => ({
+      title: a.title,
+      startChapter: a.start_chapter,
+      endChapter: a.end_chapter,
+    }))
 
   const result = computeRaceFrames({
     characters: rawCharacters,
@@ -98,12 +128,11 @@ export async function loadAppearanceRaceSnapshot(): Promise<AppearanceRaceSnapsh
     hysteresisMinRank: 4,
   })
 
-  // Sample every Nth chapter. With a 30-chapter window, sampling every 10
-  // gives ~3 samples per window — enough to capture the rolling motion
-  // without inheriting score jitter from one-off cameos. Yields ~115
-  // sampled frames across ~1145 chapters, which over the 30s reel works
-  // out to each state holding ~230 ms on screen (readable).
-  const sampleEvery = 10
+  // Sample every Nth chapter. With a 30-chapter window, sampling every 15
+  // gives 2 samples per window — coarse but each sampled state holds
+  // ~340 ms on screen over the 30s reel, which reads like a ticker. Yields
+  // ~76 sampled frames across ~1145 chapters.
+  const sampleEvery = 15
   const sampled: RaceFrame[] = []
   for (let i = 0; i < result.frames.length; i += sampleEvery) {
     sampled.push(result.frames[i])
@@ -155,5 +184,6 @@ export async function loadAppearanceRaceSnapshot(): Promise<AppearanceRaceSnapsh
     topN,
     maxScore: result.maxScore,
     sampleEvery,
+    arcs,
   }
 }
