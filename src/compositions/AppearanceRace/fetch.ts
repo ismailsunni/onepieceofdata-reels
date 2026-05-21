@@ -136,7 +136,7 @@ export async function loadAppearanceRaceSnapshot(): Promise<AppearanceRaceSnapsh
     shpIds: STRAW_HAT_IDS,
     windowSize,
     topN,
-    shpFilter: 'all',
+    shpFilter: 'hide',
     scoringMode: 'window',
     // Mild rank hysteresis to kill flicker between near-tied antagonists
     // late in long arcs (esp. Wano / Egghead crowd scenes).

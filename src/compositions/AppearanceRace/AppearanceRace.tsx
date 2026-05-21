@@ -301,7 +301,7 @@ function Header({
         Who ran One Piece
         <br />
         <span style={{ color: COLOR.subtle, fontWeight: 600, fontSize: 36 }}>
-          pre-timeskip?
+          pre-timeskip · besides the Straw Hats?
         </span>
       </div>
       <div
