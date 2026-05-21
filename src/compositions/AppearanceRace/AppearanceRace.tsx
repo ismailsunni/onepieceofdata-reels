@@ -18,12 +18,11 @@ export const RACE_WIDTH = 1080
 export const RACE_HEIGHT = 1920
 export const RACE_FPS = 30
 
-const INTRO_FRAMES = 60 // 2.0s — title settle, viewer reads framing
-const RACE_FRAMES = 780 // 26.0s — main playback
+const TITLE_FADE_FRAMES = 15 // 0.5s — title opacity ramp, race plays underneath
+const RACE_FRAMES = 840 // 28.0s — main playback, starts from frame 0
 const HOLD_FRAMES = 60 // 2.0s — final freeze + CTA
-// At 30fps with ~380 sampled race-frames over 780 playback frames, the
-// playback runs ~0.49 sampled-frames per playback frame — slow enough to
-// read names and follow rank changes between arcs.
+// Race plays from frame 0 so the early bars aren't visually frozen while
+// the title settles; title just fades in over the first half second.
 
 const TOP_N = 10
 const ROW_HEIGHT = 130
@@ -54,8 +53,8 @@ export type AppearanceRaceProps = {
 /** Total playback length for a given snapshot. Caller passes this to
  *  Composition / Player as durationInFrames. */
 export function totalFramesFor(_snapshot: AppearanceRaceSnapshot | null): number {
-  // ~30s reel: 60 (intro) + 780 (race) + 60 (hold) = 900 frames @ 30fps.
-  return INTRO_FRAMES + RACE_FRAMES + HOLD_FRAMES
+  // ~30s reel: 840 (race, starting from frame 0) + 60 (hold) = 900 @ 30fps.
+  return RACE_FRAMES + HOLD_FRAMES
 }
 
 interface RenderedRow {
@@ -398,17 +397,16 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
   const charMap = new Map<string, RaceCharacterInfo>()
   for (const c of snapshot.characters) charMap.set(c.id, c)
 
-  const raceFrames = durationInFrames - INTRO_FRAMES - HOLD_FRAMES
-  const introT = Math.min(1, frame / INTRO_FRAMES)
+  const raceFrames = durationInFrames - HOLD_FRAMES
+  const introT = Math.min(1, frame / TITLE_FADE_FRAMES)
 
-  // Map playback-frame → race-frame index (float).
+  // Map playback-frame → race-frame index (float). Race starts at frame 0
+  // (no leading freeze); title fades in over TITLE_FADE_FRAMES in parallel.
   let raceFloat: number
-  if (frame < INTRO_FRAMES) {
-    raceFloat = 0
-  } else if (frame < INTRO_FRAMES + raceFrames) {
+  if (frame < raceFrames) {
     raceFloat = interpolate(
       frame,
-      [INTRO_FRAMES, INTRO_FRAMES + raceFrames],
+      [0, raceFrames],
       [0, snapshot.frames.length - 1],
       { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
     )
@@ -435,7 +433,7 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
 
   // CTA fade-in during the hold.
   const ctaT = spring({
-    frame: frame - (INTRO_FRAMES + raceFrames),
+    frame: frame - raceFrames,
     fps: RACE_FPS,
     config: { damping: 200 },
     durationInFrames: HOLD_FRAMES,
