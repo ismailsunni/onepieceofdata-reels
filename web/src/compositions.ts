@@ -32,6 +32,14 @@ import {
   totalFramesFor as appearanceRaceFrames,
 } from '../../src/compositions/AppearanceRace/AppearanceRace'
 import type { AppearanceRaceSnapshot } from '../../src/compositions/AppearanceRace/fetch'
+import {
+  ArcLengthRanking,
+  ARC_WIDTH,
+  ARC_HEIGHT,
+  ARC_FPS,
+  totalFramesFor as arcLengthRankingFrames,
+} from '../../src/compositions/ArcLengthRanking/ArcLengthRanking'
+import type { ArcRankingSnapshot } from '../../src/compositions/ArcLengthRanking/fetch'
 
 const REEL_WIDTH = 1080
 const REEL_HEIGHT = 1920
@@ -51,6 +59,21 @@ export interface CompositionEntry {
 
 // Ordered newest-first — most recently added composition at the top.
 export const COMPOSITIONS: CompositionEntry[] = [
+  {
+    id: 'ArcLengthRanking',
+    title: 'Longest Arcs',
+    description:
+      'Every One Piece arc ranked by chapter count, revealed in story order — arcs that miss the top 10 get knocked off the board. Headlined by each arc’s main non-Straw-Hat character.',
+    component: ArcLengthRanking as ComponentType<Record<string, unknown>>,
+    width: ARC_WIDTH,
+    height: ARC_HEIGHT,
+    fps: ARC_FPS,
+    snapshotPath: 'snapshots/ArcLengthRanking.json',
+    durationInFrames: (snap) => {
+      const inner = (snap as { snapshot?: ArcRankingSnapshot }).snapshot
+      return arcLengthRankingFrames(inner ?? null)
+    },
+  },
   {
     id: 'AppearanceRace',
     title: 'Appearance Race',
