@@ -2,6 +2,11 @@ import { Composition } from 'remotion'
 import { TopBounties, TopBountiesProps } from './compositions/TopBounties/TopBounties'
 import { fetchTopBounties } from './compositions/TopBounties/fetch'
 import {
+  LowestBounties,
+  totalFramesFor as lowestBountiesFrames,
+} from './compositions/LowestBounties/LowestBounties'
+import { fetchLowestBounties } from './compositions/LowestBounties/fetch'
+import {
   EastBlueWeakest,
   EastBlueWeakestProps,
   totalFrames as eastBlueWeakestFrames,
@@ -55,6 +60,23 @@ export function Root() {
         calculateMetadata={async ({ props }) => {
           const rows = await fetchTopBounties(10)
           return { props: { ...props, rows } }
+        }}
+      />
+
+      <Composition
+        id="LowestBounties"
+        component={LowestBounties}
+        width={REEL_WIDTH}
+        height={REEL_HEIGHT}
+        fps={REEL_FPS}
+        durationInFrames={lowestBountiesFrames(10)}
+        defaultProps={{ rows: [] }}
+        calculateMetadata={async ({ props }) => {
+          const rows = await fetchLowestBounties(10)
+          return {
+            props: { ...props, rows },
+            durationInFrames: lowestBountiesFrames(rows.length),
+          }
         }}
       />
 
