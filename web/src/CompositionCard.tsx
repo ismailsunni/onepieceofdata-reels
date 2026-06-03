@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
-import { Player } from '@remotion/player'
+import { useEffect, useRef, useState } from 'react'
+import { Player, type PlayerRef } from '@remotion/player'
 import type { CompositionEntry } from './compositions'
 
 interface Props {
   entry: CompositionEntry
+  autoPlay?: boolean
 }
 
 interface SnapshotEnvelope {
@@ -19,8 +20,30 @@ type SnapshotState =
   | { status: 'build-failed'; message: string; builtAt: string }
   | { status: 'fetch-failed'; message: string }
 
-export function CompositionCard({ entry }: Props) {
+export function CompositionCard({ entry, autoPlay = false }: Props) {
   const [state, setState] = useState<SnapshotState>({ status: 'loading' })
+  const playerRef = useRef<PlayerRef>(null)
+
+  // Kick off playback once the snapshot is ready. The Player's own `autoPlay`
+  // can be swallowed by the browser's autoplay policy, so we also drive it
+  // imperatively and retry on the first user interaction with the page.
+  useEffect(() => {
+    if (!autoPlay || state.status !== 'ok') return
+
+    const start = () => playerRef.current?.play()
+    // Defer to the next tick so the player has mounted and registered.
+    const id = window.setTimeout(start, 0)
+
+    const onInteract = () => start()
+    window.addEventListener('pointerdown', onInteract, { once: true })
+    window.addEventListener('keydown', onInteract, { once: true })
+
+    return () => {
+      window.clearTimeout(id)
+      window.removeEventListener('pointerdown', onInteract)
+      window.removeEventListener('keydown', onInteract)
+    }
+  }, [autoPlay, state.status])
 
   useEffect(() => {
     let cancelled = false
@@ -96,6 +119,7 @@ export function CompositionCard({ entry }: Props) {
         )}
         {state.status === 'ok' && (
           <Player
+            ref={playerRef}
             component={entry.component}
             inputProps={state.data}
             durationInFrames={Math.max(durationInFrames, 1)}
@@ -104,6 +128,7 @@ export function CompositionCard({ entry }: Props) {
             compositionHeight={entry.height}
             controls
             loop
+            autoPlay={autoPlay}
             style={{ width: '100%', height: '100%' }}
           />
         )}

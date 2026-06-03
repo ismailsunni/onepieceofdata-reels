@@ -45,8 +45,11 @@ const REEL_WIDTH = 1080
 const REEL_HEIGHT = 1920
 const REEL_FPS = 30
 
+export type CompositionKind = 'reel' | 'carousel' | 'video'
+
 export interface CompositionEntry {
   id: string
+  kind: CompositionKind
   title: string
   description: string
   component: ComponentType<Record<string, unknown>>
@@ -61,6 +64,7 @@ export interface CompositionEntry {
 export const COMPOSITIONS: CompositionEntry[] = [
   {
     id: 'ArcLengthRanking',
+    kind: 'reel',
     title: 'Longest Arcs',
     description:
       'Every One Piece arc ranked by chapter count, revealed in story order — arcs that miss the top 10 get knocked off the board. Headlined by each arc’s main non-Straw-Hat character.',
@@ -76,6 +80,7 @@ export const COMPOSITIONS: CompositionEntry[] = [
   },
   {
     id: 'AppearanceRace',
+    kind: 'reel',
     title: 'Appearance Race',
     description:
       'Who ran pre-timeskip One Piece besides the Straw Hats? Bar-chart race over the rolling 30-chapter window, Ch.1 → Marineford.',
@@ -91,6 +96,7 @@ export const COMPOSITIONS: CompositionEntry[] = [
   },
   {
     id: 'VanishedPreSkip',
+    kind: 'carousel',
     title: 'Vanished Pre-Skip',
     description: 'Characters last seen before the time skip — a who’s-still-missing carousel.',
     component: VanishedPreSkip as ComponentType<Record<string, unknown>>,
@@ -105,6 +111,7 @@ export const COMPOSITIONS: CompositionEntry[] = [
   },
   {
     id: 'First100Chapters',
+    kind: 'carousel',
     title: 'First 100 Chapters',
     description: 'Carousel celebrating early-era characters at the 100-follower milestone.',
     component: First100Chapters as ComponentType<Record<string, unknown>>,
@@ -119,6 +126,7 @@ export const COMPOSITIONS: CompositionEntry[] = [
   },
   {
     id: 'TopSnubbed',
+    kind: 'reel',
     title: 'Top Snubbed',
     description: 'Characters with the biggest gap between popularity and screen time.',
     component: TopSnubbed as ComponentType<Record<string, unknown>>,
@@ -133,6 +141,7 @@ export const COMPOSITIONS: CompositionEntry[] = [
   },
   {
     id: 'Top100Wishlist',
+    kind: 'carousel',
     title: 'Top 100 Wishlist',
     description: 'Ranked data-driven snapshot of the community wishlist.',
     component: Top100Wishlist as ComponentType<Record<string, unknown>>,
@@ -147,6 +156,7 @@ export const COMPOSITIONS: CompositionEntry[] = [
   },
   {
     id: 'EastBlueWeakest',
+    kind: 'reel',
     title: 'East Blue Weakest',
     description: "Sea-by-sea breakdown of the world's softest fighters.",
     component: EastBlueWeakest as ComponentType<Record<string, unknown>>,
@@ -161,6 +171,7 @@ export const COMPOSITIONS: CompositionEntry[] = [
   },
   {
     id: 'TopBounties',
+    kind: 'reel',
     title: 'Top Bounties',
     description: 'Highest active bounties as a 12s reel.',
     component: TopBounties as ComponentType<Record<string, unknown>>,
