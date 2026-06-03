@@ -8,6 +8,17 @@
       name="description"
       content="Live previews of the One Piece of Data video reels and carousels."
     />
+    <script>
+      // Apply the saved theme before first paint to avoid a flash.
+      (function () {
+        try {
+          var t = localStorage.getItem('theme') || 'system'
+          document.documentElement.dataset.theme = t
+        } catch (e) {
+          document.documentElement.dataset.theme = 'system'
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

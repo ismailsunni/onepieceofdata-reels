@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   COMPOSITIONS,
   type CompositionKind,
@@ -8,6 +8,62 @@ import { CompositionCard } from './CompositionCard'
 
 type FormatFilter = 'all' | CompositionKind
 type StatusFilter = 'all' | PublishStatus
+type Theme = 'system' | 'light' | 'dark'
+
+const THEME_ORDER: Theme[] = ['system', 'light', 'dark']
+const THEME_LABEL: Record<Theme, string> = {
+  system: 'System',
+  light: 'Light',
+  dark: 'Dark',
+}
+
+function nextTheme(t: Theme): Theme {
+  return THEME_ORDER[(THEME_ORDER.indexOf(t) + 1) % THEME_ORDER.length]
+}
+
+function ThemeIcon({ theme }: { theme: Theme }) {
+  const common = {
+    width: 18,
+    height: 18,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  }
+  if (theme === 'light') {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+      </svg>
+    )
+  }
+  if (theme === 'dark') {
+    return (
+      <svg {...common}>
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    )
+  }
+  return (
+    <svg {...common}>
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+      <path d="M8 21h8M12 17v4" />
+    </svg>
+  )
+}
+
+function readTheme(): Theme {
+  try {
+    const t = localStorage.getItem('theme')
+    if (t === 'light' || t === 'dark' || t === 'system') return t
+  } catch {
+    /* localStorage unavailable */
+  }
+  return 'system'
+}
 
 const FORMAT_FILTERS: { value: FormatFilter; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -26,6 +82,16 @@ const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
 export function App() {
   const [format, setFormat] = useState<FormatFilter>('all')
   const [status, setStatus] = useState<StatusFilter>('all')
+  const [theme, setTheme] = useState<Theme>(readTheme)
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    try {
+      localStorage.setItem('theme', theme)
+    } catch {
+      /* localStorage unavailable */
+    }
+  }, [theme])
 
   const visible = useMemo(
     () =>
@@ -60,11 +126,30 @@ export function App() {
   return (
     <main className="page">
       <header className="header">
-        <h1>One Piece of Data — Reels Preview</h1>
+        <div className="header-top">
+          <h1>One Piece of Data — Reels Preview</h1>
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={() => setTheme(nextTheme(theme))}
+            aria-label={`Theme: ${THEME_LABEL[theme]}. Click to switch to ${THEME_LABEL[nextTheme(theme)]}.`}
+            title={`Theme: ${THEME_LABEL[theme]} (click to change)`}
+          >
+            <ThemeIcon theme={theme} />
+          </button>
+        </div>
         <p>
           Live previews of the data-driven reels and carousels rendered in
           Remotion. Snapshots are baked at build time; play locally for full
           motion, scrub to inspect single frames.
+        </p>
+        <p className="header-cta">
+          Want to explore the data, run custom analytics, or build your own
+          visualizations? Head to{' '}
+          <a href="https://onepieceofdata.com" target="_blank" rel="noreferrer">
+            onepieceofdata.com
+          </a>
+          .
         </p>
       </header>
 

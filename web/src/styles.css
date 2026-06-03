@@ -1,9 +1,83 @@
 :root {
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Dark palette (default). */
+  --bg: #0b0d12;
+  --text: #e6e8ee;
+  --muted: #9aa0ad;
+  --faint: #6b7180;
+  --surface: #14171e;
+  --surface-2: #1b1e26;
+  --surface-3: #21242d;
+  --border: #2b303c;
+  --border-soft: #232733;
+  --border-strong: #3a4150;
+  --accent: #f4b942;
+  --accent-contrast: #0b0d12;
+  --link: #7fb4ff;
+  --pill-count-bg: #2b303c;
+  --player-bg: #000;
+  --error: #f4878a;
+  --warn: #f4b942;
+  --ok: #5ed39e;
+  color-scheme: dark;
+}
+
+/* Light palette — shared by an explicit choice and by "system" when the OS
+   prefers light. Keep the two selectors in sync. */
+:root[data-theme='light'] {
+  --bg: #f5f7fa;
+  --text: #1b1f27;
+  --muted: #5a616e;
+  --faint: #8a909c;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --surface-3: #e9ecf1;
+  --border: #d8dce3;
+  --border-soft: #e4e7ec;
+  --border-strong: #c3c9d2;
+  --accent: #f0a500;
+  --accent-contrast: #1b1f27;
+  --link: #2563eb;
+  --pill-count-bg: #e4e7ec;
+  --player-bg: #0b0d12;
+  --error: #c0392b;
+  --warn: #b07400;
+  --ok: #1f9d63;
   color-scheme: light;
-  background: #0b0d12;
-  color: #e6e8ee;
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-theme='system'] {
+    --bg: #f5f7fa;
+    --text: #1b1f27;
+    --muted: #5a616e;
+    --faint: #8a909c;
+    --surface: #ffffff;
+    --surface-2: #eef1f5;
+    --surface-3: #e9ecf1;
+    --border: #d8dce3;
+    --border-soft: #e4e7ec;
+    --border-strong: #c3c9d2;
+    --accent: #f0a500;
+    --accent-contrast: #1b1f27;
+    --link: #2563eb;
+    --pill-count-bg: #e4e7ec;
+    --player-bg: #0b0d12;
+    --error: #c0392b;
+    --warn: #b07400;
+    --ok: #1f9d63;
+    color-scheme: light;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 * {
@@ -24,14 +98,59 @@ a {
   padding: 32px 16px 64px;
 }
 
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .header h1 {
   font-size: 1.75rem;
   margin: 0 0 4px;
 }
 
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.header p.header-cta {
+  color: var(--text);
+  margin: 6px 0 24px;
+}
+
+.header-cta a {
+  color: var(--link);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.header-cta a:hover {
+  text-decoration: underline;
+}
+
 .header p {
-  color: #9aa0ad;
-  margin: 0 0 24px;
+  color: var(--muted);
+  margin: 0 0 8px;
   font-size: 0.95rem;
 }
 
@@ -52,7 +171,7 @@ a {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #6b7180;
+  color: var(--faint);
   width: 64px;
 }
 
@@ -63,9 +182,9 @@ a {
   padding: 8px 16px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #c2c7d2;
-  background: #14171e;
-  border: 1px solid #2b303c;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
   transition:
@@ -75,14 +194,14 @@ a {
 }
 
 .pill:hover {
-  border-color: #3a4150;
-  color: #e6e8ee;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .pill-active {
-  color: #0b0d12;
-  background: #f4b942;
-  border-color: #f4b942;
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .pill-count {
@@ -95,17 +214,17 @@ a {
 }
 
 .pill:not(.pill-active) .pill-count {
-  background: #2b303c;
-  color: #9aa0ad;
+  background: var(--pill-count-bg);
+  color: var(--muted);
 }
 
 .empty-state {
   padding: 56px 24px;
   text-align: center;
-  color: #9aa0ad;
+  color: var(--muted);
   font-size: 0.95rem;
-  background: #14171e;
-  border: 1px dashed #2b303c;
+  background: var(--surface);
+  border: 1px dashed var(--border);
   border-radius: 16px;
 }
 
@@ -122,15 +241,15 @@ a {
 }
 
 .card {
-  background: #14171e;
-  border: 1px solid #232733;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
   border-radius: 16px;
   overflow: hidden;
 }
 
 .card-header {
   padding: 14px 16px;
-  border-bottom: 1px solid #232733;
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .card-title-row {
@@ -148,7 +267,7 @@ a {
 
 .card-meta {
   font-size: 0.8rem;
-  color: #9aa0ad;
+  color: var(--muted);
 }
 
 .badge {
@@ -163,19 +282,19 @@ a {
 }
 
 .status-draft {
-  color: #9aa0ad;
-  background: #21242d;
-  border-color: #2b303c;
+  color: var(--muted);
+  background: var(--surface-3);
+  border-color: var(--border);
 }
 
 .status-scheduled {
-  color: #f4b942;
+  color: var(--warn);
   background: rgba(244, 185, 66, 0.12);
   border-color: rgba(244, 185, 66, 0.4);
 }
 
 .status-published {
-  color: #5ed39e;
+  color: var(--ok);
   background: rgba(94, 211, 158, 0.12);
   border-color: rgba(94, 211, 158, 0.4);
 }
@@ -186,15 +305,15 @@ a {
   gap: 6px 14px;
   margin-top: 8px;
   font-size: 0.78rem;
-  color: #9aa0ad;
+  color: var(--muted);
 }
 
 .card-info-item.muted {
-  color: #6b7180;
+  color: var(--faint);
 }
 
 .card-info-item.link {
-  color: #7fb4ff;
+  color: var(--link);
   text-decoration: none;
   font-weight: 600;
 }
@@ -212,15 +331,15 @@ a {
 
 .tag {
   font-size: 0.72rem;
-  color: #9aa0ad;
-  background: #1b1e26;
-  border: 1px solid #2b303c;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 2px 8px;
 }
 
 .player-wrap {
-  background: #000;
+  background: var(--player-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,10 +348,10 @@ a {
 .status {
   padding: 24px;
   text-align: center;
-  color: #9aa0ad;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
 .error {
-  color: #f4878a;
+  color: var(--error);
 }
