@@ -38,8 +38,22 @@ a {
 .filters {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
-  margin: 0 0 28px;
+  margin: 0 0 14px;
+}
+
+.filters:last-of-type {
+  margin-bottom: 28px;
+}
+
+.filter-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7180;
+  width: 64px;
 }
 
 .pill {
@@ -119,6 +133,13 @@ a {
   border-bottom: 1px solid #232733;
 }
 
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .card-title {
   font-size: 1.05rem;
   font-weight: 600;
@@ -128,6 +149,74 @@ a {
 .card-meta {
   font-size: 0.8rem;
   color: #9aa0ad;
+}
+
+.badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.status-draft {
+  color: #9aa0ad;
+  background: #21242d;
+  border-color: #2b303c;
+}
+
+.status-scheduled {
+  color: #f4b942;
+  background: rgba(244, 185, 66, 0.12);
+  border-color: rgba(244, 185, 66, 0.4);
+}
+
+.status-published {
+  color: #5ed39e;
+  background: rgba(94, 211, 158, 0.12);
+  border-color: rgba(94, 211, 158, 0.4);
+}
+
+.card-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: #9aa0ad;
+}
+
+.card-info-item.muted {
+  color: #6b7180;
+}
+
+.card-info-item.link {
+  color: #7fb4ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.card-info-item.link:hover {
+  text-decoration: underline;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.tag {
+  font-size: 0.72rem;
+  color: #9aa0ad;
+  background: #1b1e26;
+  border: 1px solid #2b303c;
+  border-radius: 6px;
+  padding: 2px 8px;
 }
 
 .player-wrap {

@@ -9,6 +9,10 @@ import {
   type TopBountiesProps,
 } from '../../src/compositions/TopBounties/TopBounties'
 import {
+  LowestBounties,
+  totalFramesFor as lowestBountiesFrames,
+} from '../../src/compositions/LowestBounties/LowestBounties'
+import {
   EastBlueWeakest,
   totalFrames as eastBlueWeakestFrames,
   type EastBlueWeakestProps,
@@ -47,11 +51,28 @@ const REEL_FPS = 30
 
 export type CompositionKind = 'reel' | 'carousel' | 'video'
 
+export type PublishStatus = 'draft' | 'scheduled' | 'published'
+
+export type Platform = 'instagram' | 'tiktok' | 'youtube' | 'x'
+
+export interface Publication {
+  platform: Platform
+  url: string
+  /** ISO date (YYYY-MM-DD) the piece went live, if known. */
+  publishedAt?: string
+}
+
 export interface CompositionEntry {
   id: string
   kind: CompositionKind
   title: string
   description: string
+  /** ISO date (YYYY-MM-DD) the composition was first created. */
+  createdAt: string
+  status: PublishStatus
+  /** Where this piece is posted. Omitted while it's still a draft. */
+  publication?: Publication
+  tags?: string[]
   component: ComponentType<Record<string, unknown>>
   width: number
   height: number
@@ -61,10 +82,46 @@ export interface CompositionEntry {
 }
 
 // Ordered newest-first — most recently added composition at the top.
-export const COMPOSITIONS: CompositionEntry[] = [
+//
+// `createdAt` is seeded from each composition's first git commit; `status` and
+// `tags` are editorial. When a piece goes live, flip its status and add the
+// publication, e.g.:
+//
+//   status: 'published',
+//   publication: {
+//     platform: 'instagram',
+//     url: 'https://www.instagram.com/reel/XXXXXXXXXXX/',
+//     publishedAt: '2026-06-01',
+//   },
+//
+// Order in this array is irrelevant — COMPOSITIONS is sorted newest-first by
+// `createdAt` at the bottom of the file.
+const ENTRIES: CompositionEntry[] = [
+  {
+    id: 'LowestBounties',
+    kind: 'reel',
+    createdAt: '2026-06-03',
+    status: 'draft',
+    tags: ['bounties', 'pirates', 'ranking'],
+    title: 'Lowest Bounties',
+    description:
+      'The 10 lowest confirmed bounties among pirates, revealed bottom-up so Chopper (฿1K) lands as the punchline. Ties broken by appearance count.',
+    component: LowestBounties as ComponentType<Record<string, unknown>>,
+    width: REEL_WIDTH,
+    height: REEL_HEIGHT,
+    fps: REEL_FPS,
+    snapshotPath: 'snapshots/LowestBounties.json',
+    durationInFrames: (snap) => {
+      const rows = (snap as { rows?: unknown[] }).rows ?? []
+      return lowestBountiesFrames(rows.length)
+    },
+  },
   {
     id: 'ArcLengthRanking',
     kind: 'reel',
+    createdAt: '2026-05-29',
+    status: 'draft',
+    tags: ['arcs', 'ranking', 'chapters'],
     title: 'Longest Arcs',
     description:
       'Every One Piece arc ranked by chapter count, revealed in story order — arcs that miss the top 10 get knocked off the board. Headlined by each arc’s main non-Straw-Hat character.',
@@ -81,6 +138,9 @@ export const COMPOSITIONS: CompositionEntry[] = [
   {
     id: 'AppearanceRace',
     kind: 'reel',
+    createdAt: '2026-05-21',
+    status: 'draft',
+    tags: ['appearances', 'pre-timeskip', 'bar-chart-race'],
     title: 'Appearance Race',
     description:
       'Who ran pre-timeskip One Piece besides the Straw Hats? Bar-chart race over the rolling 30-chapter window, Ch.1 → Marineford.',
@@ -97,6 +157,9 @@ export const COMPOSITIONS: CompositionEntry[] = [
   {
     id: 'VanishedPreSkip',
     kind: 'carousel',
+    createdAt: '2026-05-20',
+    status: 'draft',
+    tags: ['characters', 'pre-timeskip', 'missing'],
     title: 'Vanished Pre-Skip',
     description: 'Characters last seen before the time skip — a who’s-still-missing carousel.',
     component: VanishedPreSkip as ComponentType<Record<string, unknown>>,
@@ -112,6 +175,9 @@ export const COMPOSITIONS: CompositionEntry[] = [
   {
     id: 'First100Chapters',
     kind: 'carousel',
+    createdAt: '2026-05-15',
+    status: 'draft',
+    tags: ['characters', 'east-blue', 'milestone'],
     title: 'First 100 Chapters',
     description: 'Carousel celebrating early-era characters at the 100-follower milestone.',
     component: First100Chapters as ComponentType<Record<string, unknown>>,
@@ -127,6 +193,9 @@ export const COMPOSITIONS: CompositionEntry[] = [
   {
     id: 'TopSnubbed',
     kind: 'reel',
+    createdAt: '2026-05-04',
+    status: 'draft',
+    tags: ['characters', 'popularity', 'screen-time'],
     title: 'Top Snubbed',
     description: 'Characters with the biggest gap between popularity and screen time.',
     component: TopSnubbed as ComponentType<Record<string, unknown>>,
@@ -142,6 +211,9 @@ export const COMPOSITIONS: CompositionEntry[] = [
   {
     id: 'Top100Wishlist',
     kind: 'carousel',
+    createdAt: '2026-05-06',
+    status: 'draft',
+    tags: ['community', 'wishlist', 'ranking'],
     title: 'Top 100 Wishlist',
     description: 'Ranked data-driven snapshot of the community wishlist.',
     component: Top100Wishlist as ComponentType<Record<string, unknown>>,
@@ -157,6 +229,9 @@ export const COMPOSITIONS: CompositionEntry[] = [
   {
     id: 'EastBlueWeakest',
     kind: 'reel',
+    createdAt: '2026-05-01',
+    status: 'draft',
+    tags: ['power-levels', 'east-blue'],
     title: 'East Blue Weakest',
     description: "Sea-by-sea breakdown of the world's softest fighters.",
     component: EastBlueWeakest as ComponentType<Record<string, unknown>>,
@@ -172,6 +247,9 @@ export const COMPOSITIONS: CompositionEntry[] = [
   {
     id: 'TopBounties',
     kind: 'reel',
+    createdAt: '2026-05-01',
+    status: 'draft',
+    tags: ['bounties', 'ranking'],
     title: 'Top Bounties',
     description: 'Highest active bounties as a 12s reel.',
     component: TopBounties as ComponentType<Record<string, unknown>>,
@@ -182,6 +260,13 @@ export const COMPOSITIONS: CompositionEntry[] = [
     durationInFrames: () => REEL_FPS * 12,
   },
 ]
+
+// Newest-first by creation date. localeCompare on ISO YYYY-MM-DD strings sorts
+// chronologically; Array.prototype.sort is stable, so same-day entries keep
+// their ENTRIES order.
+export const COMPOSITIONS: CompositionEntry[] = [...ENTRIES].sort((a, b) =>
+  b.createdAt.localeCompare(a.createdAt)
+)
 
 // Silence "imported but only used as type-info" warnings for prop shapes we
 // rely on indirectly via component generics.

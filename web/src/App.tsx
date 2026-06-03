@@ -1,37 +1,55 @@
 import { useMemo, useState } from 'react'
-import { COMPOSITIONS, type CompositionKind } from './compositions'
+import {
+  COMPOSITIONS,
+  type CompositionKind,
+  type PublishStatus,
+} from './compositions'
 import { CompositionCard } from './CompositionCard'
 
-type Filter = 'all' | CompositionKind
+type FormatFilter = 'all' | CompositionKind
+type StatusFilter = 'all' | PublishStatus
 
-const FILTERS: { value: Filter; label: string }[] = [
+const FORMAT_FILTERS: { value: FormatFilter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'reel', label: 'Reels' },
   { value: 'carousel', label: 'Carousels' },
   { value: 'video', label: 'Videos' },
 ]
 
-export function App() {
-  const [filter, setFilter] = useState<Filter>('all')
+const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'published', label: 'Published' },
+  { value: 'scheduled', label: 'Scheduled' },
+  { value: 'draft', label: 'Draft' },
+]
 
-  const counts = useMemo(() => {
-    const c: Record<Filter, number> = {
-      all: COMPOSITIONS.length,
-      reel: 0,
-      carousel: 0,
-      video: 0,
-    }
-    for (const entry of COMPOSITIONS) c[entry.kind]++
-    return c
-  }, [])
+export function App() {
+  const [format, setFormat] = useState<FormatFilter>('all')
+  const [status, setStatus] = useState<StatusFilter>('all')
 
   const visible = useMemo(
     () =>
-      filter === 'all'
-        ? COMPOSITIONS
-        : COMPOSITIONS.filter((c) => c.kind === filter),
-    [filter]
+      COMPOSITIONS.filter(
+        (c) =>
+          (format === 'all' || c.kind === format) &&
+          (status === 'all' || c.status === status)
+      ),
+    [format, status]
   )
+
+  // Counts for one axis, respecting the other axis's current selection.
+  const formatCount = (value: FormatFilter) =>
+    COMPOSITIONS.filter(
+      (c) =>
+        (value === 'all' || c.kind === value) &&
+        (status === 'all' || c.status === status)
+    ).length
+  const statusCount = (value: StatusFilter) =>
+    COMPOSITIONS.filter(
+      (c) =>
+        (format === 'all' || c.kind === format) &&
+        (value === 'all' || c.status === value)
+    ).length
 
   // Autoplay the first reel on screen so the gallery opens in motion.
   const autoPlayId = useMemo(
@@ -51,24 +69,40 @@ export function App() {
       </header>
 
       <nav className="filters" aria-label="Filter by format">
-        {FILTERS.map((f) => (
+        <span className="filter-label">Format</span>
+        {FORMAT_FILTERS.map((f) => (
           <button
             key={f.value}
             type="button"
-            className={`pill${filter === f.value ? ' pill-active' : ''}`}
-            aria-pressed={filter === f.value}
-            onClick={() => setFilter(f.value)}
+            className={`pill${format === f.value ? ' pill-active' : ''}`}
+            aria-pressed={format === f.value}
+            onClick={() => setFormat(f.value)}
           >
             {f.label}
-            <span className="pill-count">{counts[f.value]}</span>
+            <span className="pill-count">{formatCount(f.value)}</span>
+          </button>
+        ))}
+      </nav>
+
+      <nav className="filters" aria-label="Filter by status">
+        <span className="filter-label">Status</span>
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            className={`pill${status === f.value ? ' pill-active' : ''}`}
+            aria-pressed={status === f.value}
+            onClick={() => setStatus(f.value)}
+          >
+            {f.label}
+            <span className="pill-count">{statusCount(f.value)}</span>
           </button>
         ))}
       </nav>
 
       {visible.length === 0 ? (
         <div className="empty-state">
-          No {filter === 'video' ? 'videos' : `${filter}s`} yet — check back
-          soon.
+          Nothing matches this filter yet — try another combination.
         </div>
       ) : (
         <section className="gallery">

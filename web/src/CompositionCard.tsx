@@ -1,10 +1,38 @@
 import { useEffect, useRef, useState } from 'react'
 import { Player, type PlayerRef } from '@remotion/player'
-import type { CompositionEntry } from './compositions'
+import type {
+  CompositionEntry,
+  Platform,
+  PublishStatus,
+} from './compositions'
 
 interface Props {
   entry: CompositionEntry
   autoPlay?: boolean
+}
+
+const STATUS_LABEL: Record<PublishStatus, string> = {
+  draft: 'Draft',
+  scheduled: 'Scheduled',
+  published: 'Published',
+}
+
+const PLATFORM_LABEL: Record<Platform, string> = {
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  x: 'X',
+}
+
+function formatDate(iso: string): string {
+  // Parse as a plain calendar date (avoid TZ shifting the day).
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 interface SnapshotEnvelope {
@@ -87,10 +115,44 @@ export function CompositionCard({ entry, autoPlay = false }: Props) {
   return (
     <article className="card">
       <header className="card-header">
-        <h2 className="card-title">{entry.title}</h2>
+        <div className="card-title-row">
+          <h2 className="card-title">{entry.title}</h2>
+          <span className={`badge status-${entry.status}`}>
+            {STATUS_LABEL[entry.status]}
+          </span>
+        </div>
         <p className="card-meta">
           {entry.description} · {entry.width}×{entry.height} · {entry.fps} fps
         </p>
+        <div className="card-info">
+          <span className="card-info-item">
+            Created {formatDate(entry.createdAt)}
+          </span>
+          {entry.publication ? (
+            <a
+              className="card-info-item link"
+              href={entry.publication.url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              ↗ {PLATFORM_LABEL[entry.publication.platform]}
+              {entry.publication.publishedAt
+                ? ` · ${formatDate(entry.publication.publishedAt)}`
+                : ''}
+            </a>
+          ) : (
+            <span className="card-info-item muted">Not published</span>
+          )}
+        </div>
+        {entry.tags && entry.tags.length > 0 && (
+          <div className="card-tags">
+            {entry.tags.map((t) => (
+              <span key={t} className="tag">
+                #{t}
+              </span>
+            ))}
+          </div>
+        )}
       </header>
       <div
         className="player-wrap"
