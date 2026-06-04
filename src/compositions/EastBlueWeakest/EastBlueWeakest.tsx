@@ -10,6 +10,7 @@ import {
   useVideoConfig,
 } from 'remotion'
 import type { SeaCard } from './fetch'
+import { SITE } from '../../components/Watermark'
 import { formatBerry } from '../../lib/format'
 
 export type EastBlueWeakestProps = {
@@ -79,7 +80,7 @@ const THEMES: Record<
 
 const SANS = 'system-ui, -apple-system, sans-serif'
 
-const FOOTER_SITE = 'onepieceofdata.com'
+const FOOTER_SITE = SITE
 
 function Footer({ latestChapter }: { latestChapter: number | null }) {
   return (

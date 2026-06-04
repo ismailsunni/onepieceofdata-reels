@@ -9,6 +9,7 @@ import {
 } from 'remotion'
 import type { LowBountyRow } from './fetch'
 import { formatBerry } from '../../lib/format'
+import { Watermark } from '../../components/Watermark'
 
 export type LowestBountiesProps = {
   rows: LowBountyRow[]
@@ -208,7 +209,7 @@ export function LowestBounties({ rows }: LowestBountiesProps) {
         })}
       </div>
 
-      <Watermark />
+      <Watermark bottom={40} color="rgba(255,255,255,0.7)" />
     </AbsoluteFill>
   )
 }
@@ -252,26 +253,6 @@ function Avatar({
           {name.charAt(0)}
         </span>
       )}
-    </div>
-  )
-}
-
-function Watermark() {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 40,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        fontSize: 22,
-        letterSpacing: '0.1em',
-        color: 'rgba(255,255,255,0.7)',
-        fontWeight: 600,
-      }}
-    >
-      onepieceofdata.com
     </div>
   )
 }

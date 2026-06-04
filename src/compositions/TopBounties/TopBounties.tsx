@@ -7,6 +7,7 @@ import {
 } from 'remotion'
 import type { BountyRow } from './fetch'
 import { formatBerry } from '../../lib/format'
+import { Watermark } from '../../components/Watermark'
 
 export type TopBountiesProps = {
   rows: BountyRow[]
@@ -114,6 +115,8 @@ export function TopBounties({ rows }: TopBountiesProps) {
           )
         })}
       </div>
+
+      <Watermark />
     </AbsoluteFill>
   )
 }

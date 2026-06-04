@@ -8,6 +8,7 @@ import {
   useVideoConfig,
 } from 'remotion'
 import type { SnubbedRow } from './fetch'
+import { SITE } from '../../components/Watermark'
 
 export type TopSnubbedProps = {
   rows: SnubbedRow[]
@@ -32,7 +33,7 @@ const SANS = 'system-ui, -apple-system, sans-serif'
 const ACCENT = '#fbbf24'
 const BG_GRADIENT =
   'linear-gradient(180deg, #2a0b3a 0%, #5b1d6e 45%, #1a0a2e 100%)'
-const FOOTER_SITE = 'onepieceofdata.com'
+const FOOTER_SITE = SITE
 
 function initials(name: string): string {
   return name

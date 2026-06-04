@@ -1,5 +1,6 @@
 import { AbsoluteFill, Img, useCurrentFrame } from 'remotion'
 import type { ResolvedCharacter, ResolvedSlide } from './fetch'
+import { SITE } from '../../components/Watermark'
 
 export type VanishedPreSkipProps = {
   slides: ResolvedSlide[]
@@ -21,7 +22,7 @@ const TEXT_MUTED = '#57534e' // stone-600
 const TEXT_SOFT = 'rgba(28, 25, 23, 0.55)'
 const TILE_BG = 'rgba(255, 250, 235, 0.6)'
 const TILE_BORDER = 'rgba(180, 83, 9, 0.25)'
-const FOOTER_SITE = 'onepieceofdata.com'
+const FOOTER_SITE = SITE
 
 const SAFE_TOP = 80
 const SAFE_BOTTOM = 120

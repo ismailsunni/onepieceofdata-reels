@@ -30,13 +30,23 @@ non-standard reels) so `web/src/compositions.ts` can import them.
 
 ## 3. Footer watermark — **required**
 
-Every composition must carry the site watermark.
+Every composition must carry the site watermark. Use the shared component:
 
-```
-onepieceofdata.com
+```tsx
+import { Watermark, SITE } from '../../components/Watermark'
+
+// dark background (default):
+<Watermark />
+// light background:
+<Watermark bg="light" />
+// tweak placement / color when needed:
+<Watermark bottom={56} color="rgba(245,245,245,0.42)" />
 ```
 
-Canonical style (bottom-center, understated):
+For a footer that *also* carries a chapter label, build the layout yourself but
+reuse the `SITE` constant (`onepieceofdata.com`) so the string stays in one place.
+
+Canonical style (what the component renders — bottom-center, understated):
 
 ```ts
 {

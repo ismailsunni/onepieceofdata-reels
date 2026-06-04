@@ -1,5 +1,6 @@
 import { AbsoluteFill, Img, useCurrentFrame } from 'remotion'
 import type { ResolvedCharacter, ResolvedSlide } from './fetch'
+import { SITE } from '../../components/Watermark'
 
 export type First100ChaptersProps = {
   slides: ResolvedSlide[]
@@ -13,7 +14,7 @@ const SANS = 'system-ui, -apple-system, sans-serif'
 const ACCENT = '#fbbf24'
 const BG_GRADIENT =
   'linear-gradient(180deg, #0b1f3a 0%, #1d3a5b 45%, #050d1a 100%)'
-const FOOTER_SITE = 'onepieceofdata.com'
+const FOOTER_SITE = SITE
 
 const SAFE_TOP = 80
 const SAFE_BOTTOM = 120

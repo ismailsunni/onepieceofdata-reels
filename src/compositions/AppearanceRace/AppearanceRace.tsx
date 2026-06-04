@@ -11,6 +11,7 @@ import type {
   RaceCharacterInfo,
   CompactRaceFrame,
 } from './fetch'
+import { Watermark } from '../../components/Watermark'
 
 // 9:16 reel: 1080 × 1920.
 export const RACE_WIDTH = 1080
@@ -338,26 +339,6 @@ function LeaderCard({ leader }: { leader: RenderedRow | null }) {
   )
 }
 
-function Watermark() {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 56,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        fontSize: 22,
-        letterSpacing: '0.1em',
-        color: 'rgba(245,245,245,0.42)',
-        fontWeight: 600,
-      }}
-    >
-      onepieceofdata.com
-    </div>
-  )
-}
-
 function Header({
   chapter,
   arcTitle,
@@ -525,7 +506,7 @@ export function AppearanceRace({ snapshot }: AppearanceRaceProps) {
           isLeader={i === 0 && row.visible}
         />
       ))}
-      <Watermark />
+      <Watermark bottom={56} color="rgba(245,245,245,0.42)" />
     </AbsoluteFill>
   )
 }

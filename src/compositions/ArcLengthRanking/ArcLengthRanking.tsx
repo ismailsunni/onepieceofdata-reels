@@ -1,6 +1,7 @@
 import { AbsoluteFill, Img, useCurrentFrame } from 'remotion'
 import { hashId } from '../../lib/appearanceRace'
 import type { ArcCharacter, ArcInfo, ArcRankingSnapshot } from './fetch'
+import { Watermark } from '../../components/Watermark'
 
 const CARD_W = 196
 const CARD_GAP = 28
@@ -469,26 +470,6 @@ function Header({
   )
 }
 
-function Watermark() {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: 56,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        fontSize: 22,
-        letterSpacing: '0.1em',
-        color: 'rgba(21, 35, 59, 0.5)',
-        fontWeight: 700,
-      }}
-    >
-      onepieceofdata.com
-    </div>
-  )
-}
-
 export function ArcLengthRanking({ snapshot }: ArcLengthRankingProps) {
   const frame = useCurrentFrame()
 
@@ -617,7 +598,7 @@ export function ArcLengthRanking({ snapshot }: ArcLengthRankingProps) {
       {rendered.map((row) => (
         <Row key={row.index} row={row} />
       ))}
-      <Watermark />
+      <Watermark bg="light" bottom={56} />
     </AbsoluteFill>
   )
 }
