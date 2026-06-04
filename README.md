@@ -111,6 +111,8 @@ scripts/
 
 ## Adding a new composition
 
+Follow the [composition guidelines](docs/composition-guidelines.md) for canvas, duration, footer/chapter conventions, safe zones, and motion.
+
 1. Create `src/compositions/<Name>/<Name>.tsx` (the composition) and `fetch.ts` (the Supabase query).
 2. Register it in `src/Root.tsx` with a `<Composition>` block — use `calculateMetadata` to fetch data once at build time and pass it as props.
 3. To surface it in the web gallery:
