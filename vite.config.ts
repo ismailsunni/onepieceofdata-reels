@@ -4,7 +4,7 @@ import path from 'node:path'
 
 // GitHub Pages serves the site at https://<user>.github.io/<repo>/.
 // Override with VITE_BASE=/ for root-domain deploys or `npm run web:dev`.
-const base = process.env.VITE_BASE ?? '/onepieceofdata-reels/'
+const base = process.env.VITE_BASE ?? '/onepieceofdata-studio/'
 
 export default defineConfig({
   root: path.resolve(__dirname, 'web'),

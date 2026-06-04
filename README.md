@@ -1,6 +1,6 @@
-# onepieceofdata-reels
+# onepieceofdata-studio
 
-Instagram Reels generator for [One Piece of Data](https://github.com/ismailsunni/onepieceofdata-react), built with [Remotion](https://www.remotion.dev/).
+Data-driven reels, carousels, and videos for [One Piece of Data](https://github.com/ismailsunni/onepieceofdata-react), built with [Remotion](https://www.remotion.dev/) and published as a gallery at [viz.onepieceofdata.com](https://viz.onepieceofdata.com).
 
 Reels are short data-driven videos (1080×1920, 9:16, 30 fps) that surface charts and facts from the same Supabase backend that powers the React site.
 

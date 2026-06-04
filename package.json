@@ -1,8 +1,8 @@
 {
-  "name": "onepieceofdata-reels",
+  "name": "onepieceofdata-studio",
   "version": "0.1.0",
   "private": true,
-  "description": "Instagram Reels generator built with Remotion, sourcing data from the One Piece of Data Supabase backend.",
+  "description": "Data-driven reels, carousels, and videos for One Piece of Data — built with Remotion and published as a gallery at viz.onepieceofdata.com.",
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts",
