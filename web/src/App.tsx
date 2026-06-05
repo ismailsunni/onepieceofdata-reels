@@ -141,8 +141,16 @@ export function App() {
         <p className="header-cta">
           Data-driven reels and carousels about the world of One Piece — every
           chart, ranking, and number pulled straight from the dataset, with new
-          drops landing here. Want to dig into the data yourself, run custom
-          analytics, or build your own visualizations? Head to{' '}
+          drops landing here — follow along on{' '}
+          <a
+            href="https://www.instagram.com/onepieceofdata/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Instagram
+          </a>
+          . Want to dig into the data yourself, run custom analytics, or build
+          your own visualizations? Head to{' '}
           <a href="https://onepieceofdata.com" target="_blank" rel="noreferrer">
             onepieceofdata.com
           </a>
