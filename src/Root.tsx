@@ -44,6 +44,8 @@ import {
   totalFramesFor as arcLengthRankingFrames,
 } from './compositions/ArcLengthRanking/ArcLengthRanking'
 import { loadArcRankingSnapshot } from './compositions/ArcLengthRanking/fetch'
+import { WorldCupOnePiece } from './compositions/WorldCupOnePiece/WorldCupOnePiece'
+import { loadWorldCupSnapshot } from './compositions/WorldCupOnePiece/fetch'
 
 // Instagram Reels: 9:16 portrait, 1080x1920, 30fps.
 const REEL_WIDTH = 1080
@@ -199,6 +201,23 @@ export function Root() {
         defaultProps={{ slides: [], latestChapter: null }}
         calculateMetadata={async ({ props }) => {
           const { slides, latestChapter } = await loadWishlistSnapshot()
+          return {
+            props: { ...props, slides, latestChapter },
+            durationInFrames: Math.max(slides.length, 1),
+          }
+        }}
+      />
+      <Composition
+        id="WorldCupOnePiece"
+        component={WorldCupOnePiece}
+        width={SLIDE_WIDTH}
+        height={SLIDE_HEIGHT}
+        // Carousel: 1 frame per slide. Render with `npm run carousel`.
+        fps={1}
+        durationInFrames={1}
+        defaultProps={{ slides: [], latestChapter: null }}
+        calculateMetadata={async ({ props }) => {
+          const { slides, latestChapter } = await loadWorldCupSnapshot()
           return {
             props: { ...props, slides, latestChapter },
             durationInFrames: Math.max(slides.length, 1),

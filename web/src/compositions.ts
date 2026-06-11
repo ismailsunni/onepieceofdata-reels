@@ -29,6 +29,7 @@ import {
   SLIDE_WIDTH,
   SLIDE_HEIGHT,
 } from '../../src/compositions/Top100Wishlist/Top100Wishlist'
+import { WorldCupOnePiece } from '../../src/compositions/WorldCupOnePiece/WorldCupOnePiece'
 import {
   AppearanceRace,
   RACE_WIDTH,
@@ -98,6 +99,30 @@ export interface CompositionEntry {
 // Order in this array is irrelevant — COMPOSITIONS is sorted newest-first by
 // `createdAt` at the bottom of the file.
 const ENTRIES: CompositionEntry[] = [
+  {
+    id: 'WorldCupOnePiece',
+    kind: 'carousel',
+    createdAt: '2026-06-09',
+    status: 'published',
+    publication: {
+      platform: 'instagram',
+      url: 'https://www.instagram.com/p/DZaEp0FlE0M/',
+      publishedAt: '2026-06-10',
+    },
+    tags: ['world-cup', 'timeline', 'football', 'arcs'],
+    title: 'One Piece × The World Cup',
+    description:
+      'Every FIFA World Cup since the manga began (1998 → 2022), each paired with the arc the Straw Hats were sailing through when the world watched.',
+    component: WorldCupOnePiece as ComponentType<Record<string, unknown>>,
+    width: SLIDE_WIDTH,
+    height: SLIDE_HEIGHT,
+    fps: 1,
+    snapshotPath: 'snapshots/WorldCupOnePiece.json',
+    durationInFrames: (snap) => {
+      const slides = (snap as { slides?: unknown[] }).slides ?? []
+      return Math.max(slides.length, 1)
+    },
+  },
   {
     id: 'LowestBounties',
     kind: 'reel',
